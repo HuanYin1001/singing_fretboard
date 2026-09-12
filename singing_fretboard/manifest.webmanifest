@@ -1,0 +1,21 @@
+{
+  "name": "Singing Fretboard 弦吟指板",
+  "short_name": "Singing Fretboard",
+  "lang": "zh-Hant",
+  "dir": "ltr",
+  "description": "弦吟指板圖編輯器：建立、上色並匯出吉他音階指板圖。",
+  "start_url": "./",
+  "scope": "./",
+  "id": "singing-fretboard",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "landscape",
+  "background_color": "#EDE6DA",
+  "theme_color": "#B45309",
+  "categories": ["education", "music"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
