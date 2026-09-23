@@ -5,6 +5,8 @@ const CORE = [
   './',
   './index.html',
   './manifest.webmanifest',
+  './fretboard-music.js',
+  './fretboard-storage.js',
   './assets/huanyin_logo.jpg',
   './icons/icon-192.png',
   './icons/icon-512.png',
