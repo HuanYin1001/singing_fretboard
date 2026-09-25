@@ -1,6 +1,6 @@
 // Singing Fretboard — service worker
 // 換版本號就會讓所有裝置重新下載新檔案
-const VERSION = 'sf-v16';
+const VERSION = 'sf-v19';
 const CORE = [
   './',
   './index.html',
@@ -12,8 +12,10 @@ const CORE = [
   './chord-music.js',
   './chord-library.js',
   './tour-text.js',
+  './hy-shell.js',
   './assets/tour-avatar.jpg',
   './assets/huanyin_logo.jpg',
+  './assets/sfx/sub-ding.mp3',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-512-maskable.png',
