@@ -60,7 +60,13 @@
 3. **重要**：如果同時改了 `sw.js` 以外的檔案而使用者拿到舊版，把 `sw.js` 裡的
    `const VERSION = 'sf-v1';` 改成 `'sf-v2'`（依序遞增）再 push，所有裝置就會重新下載。
 
-### 本次更新（v2.2.1，`sf-v14`）
+### 本次更新（v2.3.1，`sf-v16`）
+
+- 新增使用導覽：兩個編輯器左下角「使用導覽」按鈕，直接在編輯器上示範，結束後畫面原封不動還原。
+- 新增 `tour-text.js`、`assets/tour-avatar.jpg`，要一起上傳。
+- 資料格式沒變，沿用 `hy-fb-v2_2-`。
+
+### 前次更新（v2.2.1，`sf-v14`）
 
 - 分享連結預覽：`index.html`、`chord.html` 加上標題、介紹和圖片（`assets/og-image.jpg`，600×600），貼到 LINE、Messenger 等會顯示預覽。
   - 標題：弦吟指板編輯器｜Singing Fretboard

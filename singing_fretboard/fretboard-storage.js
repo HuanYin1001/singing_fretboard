@@ -9,7 +9,10 @@
   var LS_SCHEMA_V = 1;                   // 本機「目前狀態」存檔格式版本
   var KEYS = { fav: LS_NS + 'favs', save: LS_NS + 'saves', state: LS_NS + 'current', exp: LS_NS + 'export' };
 
-  function store(s) { return s || window.localStorage; }
+  // 導覽示範（網址帶 ?tour=1）：改用只在記憶體裡的暫存，不讀也不寫使用者的資料。
+  var TOUR = (function () { try { return new URLSearchParams(location.search).get('tour') === '1'; } catch (e) { return false; } })();
+  var MEM = { _d: {}, get length() { return Object.keys(this._d).length; }, key: function (i) { return Object.keys(this._d)[i] || null; }, getItem: function (k) { return Object.prototype.hasOwnProperty.call(this._d, k) ? this._d[k] : null; }, setItem: function (k, v) { this._d[k] = String(v); }, removeItem: function (k) { delete this._d[k]; } };
+  function store(s) { return s || (TOUR ? MEM : window.localStorage); }
 
   // 第一次開新版時，把舊倉庫的資料「複製」到新倉庫；舊資料原地保留，新倉庫已有的不覆蓋。
   function migrateNS(s) {

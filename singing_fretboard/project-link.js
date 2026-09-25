@@ -13,7 +13,10 @@
   var STD_NAME = 'Standard　E A D G B E';
   var LET = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
 
-  function store(s) { return s || root.localStorage; }
+  // 導覽示範（網址帶 ?tour=1）：改用只在記憶體裡的暫存，不讀也不寫使用者的資料。
+  var TOUR = (function () { try { return new URLSearchParams(location.search).get('tour') === '1'; } catch (e) { return false; } })();
+  var MEM = { _d: {}, get length() { return Object.keys(this._d).length; }, key: function (i) { return Object.keys(this._d)[i] || null; }, getItem: function (k) { return Object.prototype.hasOwnProperty.call(this._d, k) ? this._d[k] : null; }, setItem: function (k, v) { this._d[k] = String(v); }, removeItem: function (k) { delete this._d[k]; } };
+  function store(s) { return s || (TOUR ? MEM : root.localStorage); }
   function read(key, s) { try { var v = store(s).getItem(key); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
   function write(key, val, s) { try { if (val === null || val === undefined) store(s).removeItem(key); else store(s).setItem(key, JSON.stringify(val)); return true; } catch (e) { return false; } }
 
