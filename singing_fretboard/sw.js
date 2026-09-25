@@ -1,12 +1,16 @@
 // Singing Fretboard — service worker
 // 換版本號就會讓所有裝置重新下載新檔案
-const VERSION = 'sf-v12';
+const VERSION = 'sf-v13';
 const CORE = [
   './',
   './index.html',
+  './chord.html',
   './manifest.webmanifest',
   './fretboard-music.js',
   './fretboard-storage.js',
+  './project-link.js',
+  './chord-music.js',
+  './chord-library.js',
   './assets/huanyin_logo.jpg',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -38,16 +42,17 @@ self.addEventListener('fetch', (e) => {
   const isFont = /fonts\.(googleapis|gstatic)\.com|jsdelivr\.net/.test(url.host);
   if (!sameOrigin && !isFont) return;
 
-  // 導覽請求：先網路、失敗回快取（離線時用上次的 index.html）
+  // 導覽請求：先網路、失敗回快取（離線時用上次的頁面）
   if (req.mode === 'navigate') {
+    const page = /chord\.html$/.test(url.pathname) ? './chord.html' : './index.html';
     e.respondWith(
       fetch(req)
         .then((res) => {
           const copy = res.clone();
-          caches.open(VERSION).then((c) => c.put('./index.html', copy));
+          caches.open(VERSION).then((c) => c.put(page, copy));
           return res;
         })
-        .catch(() => caches.match('./index.html').then((r) => r || caches.match('./')))
+        .catch(() => caches.match(page).then((r) => r || caches.match('./')))
     );
     return;
   }

@@ -2,8 +2,9 @@
 // 管三件事：瀏覽器本機儲存（localStorage）、專案檔（.json）的版本檢查、倉庫改名時的資料搬家。
 // 規則寫在專案的 CLAUDE.md：舊版格式不轉換，請使用者重做；較新版本請使用者更新 app。
 (function () {
-  var LS_NS = 'hy-fb-v1_8-';            // 現在的倉庫名稱
-  var LS_PREV_NS = ['hy-fb-v1_1-'];     // 以前用過的倉庫名稱（正式版 v1.4 就存在這裡）。之後改名要把舊名加進來，不能刪。
+  var CFG = window.HYFB_CONFIG || {};   // v2.2 起在 <head> 先設定自己的倉庫名稱（見 project-link.js）
+  var LS_NS = CFG.ns || 'hy-fb-v1_8-';            // 現在的倉庫名稱
+  var LS_PREV_NS = CFG.prevNs || ['hy-fb-v1_1-'];     // 以前用過的倉庫名稱（正式版 v1.4 就存在這裡）。之後改名要把舊名加進來，不能刪。
   var PROJ_V = 1;                        // 專案檔（.json）格式版本
   var LS_SCHEMA_V = 1;                   // 本機「目前狀態」存檔格式版本
   var KEYS = { fav: LS_NS + 'favs', save: LS_NS + 'saves', state: LS_NS + 'current', exp: LS_NS + 'export' };
@@ -45,6 +46,7 @@
   function parseProject(text) {
     var o;
     try { o = JSON.parse(text); } catch (e) { throw userError('這份檔案讀不進來，請確認是專案檔（.json）。'); }
+    if (o && o.app === 'singing-chord') throw userError('這是和弦的專案檔，請切換到「和弦」再開啟。');
     if (!o || o.app !== 'singing-fretboard' || !o.d) throw userError('這份檔案不是弦吟指板的專案檔。');
     if (typeof o.v !== 'number' || o.v < PROJ_V) throw userError('這份專案檔是舊版格式，目前版本無法開啟。');
     if (o.v > PROJ_V) throw userError('這份專案檔來自較新的版本，請更新 app 後再開啟。');

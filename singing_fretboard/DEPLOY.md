@@ -60,7 +60,14 @@
 3. **重要**：如果同時改了 `sw.js` 以外的檔案而使用者拿到舊版，把 `sw.js` 裡的
    `const VERSION = 'sf-v1';` 改成 `'sf-v2'`（依序遞增）再 push，所有裝置就會重新下載。
 
-### 本次更新（v1.9，`sf-v12`）
+### 本次更新（v2.2，`sf-v13`）
+
+- 指板和和弦連動：`index.html` 是指板編輯器，新增 `chord.html` 是和弦編輯器。
+- 新增 `project-link.js`、`chord-music.js`、`chord-library.js`，要一起上傳。
+- 資料改存在 `hy-fb-v2_2-`。第一次打開會把 v1.9 的 `hy-fb-v1_8-`（再更舊的 `hy-fb-v1_1-`）複製過來，舊資料不刪。
+- v1.9 的 index.html 備份在「部署備份 backup/v1.9 index.html」。
+
+### 前次更新（v1.9，`sf-v12`）
 
 - 改用「弦吟指板 v1.9_拆分與測試 Split Tests」重新產生 `index.html`。
 - 新增 `fretboard-music.js`、`fretboard-storage.js`，要跟 `index.html` 一起 push。
