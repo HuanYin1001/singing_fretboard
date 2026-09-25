@@ -60,7 +60,14 @@
 3. **重要**：如果同時改了 `sw.js` 以外的檔案而使用者拿到舊版，把 `sw.js` 裡的
    `const VERSION = 'sf-v1';` 改成 `'sf-v2'`（依序遞增）再 push，所有裝置就會重新下載。
 
-### 本次更新（v2.2，`sf-v13`）
+### 本次更新（v2.2.1，`sf-v14`）
+
+- 分享連結預覽：`index.html`、`chord.html` 加上標題、介紹和圖片（`assets/og-image.jpg`，600×600），貼到 LINE、Messenger 等會顯示預覽。
+  - 標題：弦吟指板編輯器｜Singing Fretboard
+  - 介紹：指彈吉他手劉桓吟製作的吉他指板編輯工具，可以編輯指板和和弦圖，適合自學筆記與教學備課，打開網頁就能用。
+- 功能沒有改變。
+
+### 前次更新（v2.2，`sf-v13`）
 
 - 指板和和弦連動：`index.html` 是指板編輯器，新增 `chord.html` 是和弦編輯器。
 - 新增 `project-link.js`、`chord-music.js`、`chord-library.js`，要一起上傳。
