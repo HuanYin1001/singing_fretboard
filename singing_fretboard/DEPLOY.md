@@ -66,7 +66,8 @@
 - 和弦編輯：「名稱」輸入格縮小，建議和弦放在輸入格右邊。
 - 指板框選右鍵視窗重新排版：套入音階／清空音階放最上面，儲存成和弦圖移到下方，取消鈕拿掉。
 - 指板／和弦切換時畫面中央顯示三個琥珀色小點，讀取中不能點選。
-- 更新 `index.html`、`chord.html`、`sw.js`，其他 `.js` 一併覆蓋。
+- 減重：`index.html` 13 MB → 0.5 MB、`chord.html` 14 MB → 1.2 MB。Logo 縮成 512px、導覽頭像縮成 256×384；介面字體改成開啟時從 Google Fonts 載入（第一次開過後離線也能用）。
+- 更新 `index.html`、`chord.html`、`sw.js`、`assets/huanyin_logo.jpg`、`assets/tour-avatar.jpg`，其他 `.js` 一併覆蓋。
 
 ### 前次更新（打包版 v2.3.8，編輯器 v2.3.2 修正，`sf-v28`）
 
