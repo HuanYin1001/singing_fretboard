@@ -1,4 +1,4 @@
-// 弦吟指板：兩個編輯器共用的「外殼」功能——左下導覽按鈕滑入與發光、導覽對話框、⌘⇧L 匯出 Logo 開關、訂閱信封搖晃、提示叮聲、⌘M 靜音、導覽結束還原畫面。
+// 弦吟指板：兩個編輯器共用的「外殼」功能——左下導覽按鈕滑入與發光、導覽對話框、⌘E 匯出視窗、⌘⇧G 重播提示、⌘⇧L 匯出 Logo 開關、訂閱信封搖晃、提示叮聲、導覽結束還原畫面。
 // 用法：在編輯器 constructor 裡 HYSHELL.install(this, { fabDelay: 350 })；componentWillUnmount 裡呼叫 this.shellCleanup()。
 // Safari 修正：畫面用 CSS zoom 縮小時，Safari 回報的元素位置是「沒縮小前」的數字，導覽亮框、編輯視窗、框選都會錯位。
 // 這裡第一次量位置時先做一次小測試：瀏覽器會算錯才換算，Chrome 等正常的瀏覽器完全不受影響。
@@ -43,7 +43,7 @@
       if (this._fabArmed) return; this._fabArmed = true;
       this._fabT = setTimeout(() => { this.setState({ fabIn: true }); this.tourGlow(); this.subPulse(); }, this._shellOpts.fabDelay);
     },
-    // 訂閱按鈕：每 60 秒信封放大搖晃一次（3 秒）；前景使用滿 20 分鐘響一聲輕叮，之後每 20 分鐘一次（兩頁共用計時）。⌘M／Ctrl+M 切換提示音。
+    // 訂閱按鈕：每 60 秒信封放大搖晃一次（3 秒）；前景使用滿 20 分鐘響一聲輕叮，之後每 20 分鐘一次（兩頁共用計時）。
     subPulse() {
       if (this._spT) return;
       this._spT = setInterval(() => this.envShake(false), 60000);
@@ -65,14 +65,17 @@
           this.shellToast(on ? '已加回 Logo' : '已取消 Logo');
           return;
         }
-        if (e.code !== 'KeyM') return;
-        e.preventDefault();
-        if (e.shiftKey) { this.envShake(true, true); return; }
-        const m = !this.subMuted();
-        try { localStorage.setItem('hy-sub-mute', m ? '1' : '0'); } catch (er) {}
-        this.shellToast(m ? '提示音已關閉' : '提示音已開啟');
+        // ⌘E／Ctrl+E：打開匯出圖片視窗（每次打開都重設成有 Logo）。
+        if (e.code === 'KeyE' && !e.shiftKey) {
+          e.preventDefault();
+          if (this.state.tourOn || this.state.exportOpen) return;
+          this.setState({ exportOpen: true, exportLogo: true });
+          return;
+        }
+        // ⌘⇧G／Ctrl+Shift+G（G＝Glow 發光）：導覽按鈕重新發光＋對話框，訂閱信封搖晃＋叮聲。只播一次，不動原本的計時。
+        if (e.code === 'KeyG' && e.shiftKey) { e.preventDefault(); e.stopPropagation(); this.replayGlow(); this.envShake(true, true); return; }
       };
-      window.addEventListener('keydown', this._muteKey);
+      window.addEventListener('keydown', this._muteKey, true);
     },
     shellToast(msg) {
       clearTimeout(this._toastT);
@@ -80,7 +83,7 @@
       this._toastT = setTimeout(() => this.setState({ subToast: '' }), 1600);
     },
     subBusy() { const s = this.state; return !!(s.tourOn || !s.fabIn || s.subOffer || s.intro); },
-    subMuted() { try { return localStorage.getItem('hy-sub-mute') === '1'; } catch (e) { return false; } },
+    subMuted() { return false; }, // ⌘M 靜音已拿掉（2026-09-26）
     envShake(ding, force) {
       if (!force && this.subBusy()) return;
       clearTimeout(this._envT);
@@ -111,6 +114,15 @@
         this._bubT = setTimeout(() => this.closeBub(), 10000);
       }, 1000);
     },
+    replayGlow() {
+      if (!this.state.fabIn || this.state.tourOn) return;
+      if (this._tgT) clearInterval(this._tgT);
+      clearTimeout(this._bubT);
+      this._editSeen = false;
+      this.setState({ tourGlow: true, tourBub: 'dots' });
+      this._tgT = setInterval(() => this.setState(s => ({ tourGlow: !s.tourGlow })), 1200);
+      this._bubT = setTimeout(() => { this.setState({ tourBub: 'text' }); this._bubT = setTimeout(() => this.closeBub(), 10000); }, 1000);
+    },
     closeBub() {
       clearTimeout(this._bubT); this._bubT = null;
       if (!this.state.tourBub) return;
@@ -137,7 +149,7 @@
     shellCleanup() {
       ['_spT', '_dingT', '_dingFade', '_tgT'].forEach(k => { if (this[k]) clearInterval(this[k]); this[k] = null; });
       ['_fabT', '_fabT2', '_envT', '_dingSndT', '_toastT', '_introT', '_bubT'].forEach(k => { if (this[k]) clearTimeout(this[k]); this[k] = null; });
-      if (this._muteKey) { window.removeEventListener('keydown', this._muteKey); this._muteKey = null; }
+      if (this._muteKey) { window.removeEventListener('keydown', this._muteKey, true); this._muteKey = null; }
       if (this._ding) { try { this._ding.pause(); } catch (e) {} }
     }
   };

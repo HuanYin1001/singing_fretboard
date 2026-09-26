@@ -61,10 +61,12 @@
   // 用來判斷「存過檔之後有沒有再改」。
   function sig(o) { var t = JSON.stringify(o); var h = 5381; for (var i = 0; i < t.length; i++) h = ((h * 33) ^ t.charCodeAt(i)) >>> 0; return h.toString(36) + t.length; }
 
-  function fileName(title) {
-    var t = String(title || '').replace(/[\\/:*?"<>|]/g, '').trim();
-    return (t || 'fretboard') + '.fretboard.json';
+  // 檔名不能有 / \\ : * ? " < > |（有些電腦存檔會出錯），一律換成「-」。
+  function safeName(title, fallback) {
+    var t = String(title || '').replace(/[\\/:*?"<>|]+/g, '-').replace(/-{2,}/g, '-').replace(/^[\s-]+|[\s-]+$/g, '');
+    return t || fallback || 'untitled';
   }
+  function fileName(title) { return safeName(title, 'fretboard') + '.fretboard.json'; }
 
   // 專案檔 = 指板的部分（fb）＋和弦本（chords）。
   function buildProject(fb, chords, now) {
@@ -147,7 +149,7 @@
   root.HYLINK = {
     NS: NS, PROJ_V: PROJ_V, FB_SCHEMA_V: FB_SCHEMA_V, KEYS: KEYS, STD: STD, STD_NAME: STD_NAME,
     chordOpen: chordOpen, tuningLetters: tuningLetters, tuningName: tuningName, spellingOf: spellingOf,
-    respellNote: respellNote, respellName: respellName, respellDoc: respellDoc, sig: sig, fileName: fileName,
+    respellNote: respellNote, respellName: respellName, respellDoc: respellDoc, sig: sig, fileName: fileName, safeName: safeName,
     buildProject: buildProject, parseAny: parseAny, fbPart: fbPart,
     read: read, write: write, readFb: readFb, writeFb: writeFb, readChords: readChords, replaceChords: replaceChords, markChordsSaved: markChordsSaved,
     selFretCount: selFretCount, selToChord: selToChord, addChord: addChord

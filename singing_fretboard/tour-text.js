@@ -18,6 +18,8 @@ window.HYTOUR_TEXT = {
     { title: "存檔和匯出", body: "「檔案」功能和指板頁面相同，儲存的檔案包含和弦區跟指板區。\n「匯出圖片」可以選輸出格式、排版...等。" },
     { title: "恭喜，完成導覽！", body: "很耐心地完成導覽了呢，太棒了！\n有耐心是學吉他最重要的特質。\n「弦吟指板」會在學吉他的路上一直陪著你✨" },
   ],
+  // 左下角的提示文字。對話框裡用 [ ] 框起來的字會加藍色底線。
+  ui: { bubble: "嗨，我是[桓吟]。第一次來需要介紹，我隨時可以帶你導覽唷！", sub: "訂閱弦吟，領取免費樂譜。" },
 };
 window.HYTOUR_LS = 'hy-tour-text';
 // 每一步的代號（存檔用代號對應，之後插入新步驟也不會錯位）。
@@ -28,7 +30,7 @@ window.HYTOUR_get = function () {
   const base = window.HYTOUR_TEXT, IDS = window.HYTOUR_IDS;
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem(window.HYTOUR_LS) || 'null'); } catch (e) {}
-  const map = { fb: {}, ch: {} };
+  const map = { fb: {}, ch: {} }, ui = (saved && saved.ui) || {};
   if (saved) ['fb', 'ch'].forEach(k => {
     const v = saved[k];
     if (Array.isArray(v)) v.forEach((x, i) => { if (HYTOUR_OLD[k][i]) map[k][HYTOUR_OLD[k][i]] = x; });
@@ -41,10 +43,11 @@ window.HYTOUR_get = function () {
       return { title: v && typeof v.title === 'string' && (v.title || !s.title) ? v.title : s.title, body: (v && v.body) || s.body };
     });
   });
+  out.ui = { bubble: typeof ui.bubble === 'string' && ui.bubble.trim() ? ui.bubble : base.ui.bubble, sub: typeof ui.sub === 'string' && ui.sub.trim() ? ui.sub : base.ui.sub };
   return out;
 };
 window.HYTOUR_save = function (text) {
-  const IDS = window.HYTOUR_IDS, o = { v: 2, fb: {}, ch: {} };
+  const IDS = window.HYTOUR_IDS, o = { v: 2, fb: {}, ch: {}, ui: text.ui || {} };
   ['fb', 'ch'].forEach(k => (text[k] || []).forEach((x, i) => { if (IDS[k][i]) o[k][IDS[k][i]] = x; }));
   try { localStorage.setItem(window.HYTOUR_LS, JSON.stringify(o)); return true; } catch (e) { return false; }
 };
