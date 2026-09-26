@@ -1,4 +1,4 @@
-// 弦吟指板：兩個編輯器共用的「外殼」功能——左下導覽按鈕滑入與發光、訂閱信封搖晃、提示叮聲、⌘M 靜音、導覽結束還原畫面。
+// 弦吟指板：兩個編輯器共用的「外殼」功能——左下導覽按鈕滑入與發光、導覽對話框、⌘⇧L 匯出 Logo 開關、訂閱信封搖晃、提示叮聲、⌘M 靜音、導覽結束還原畫面。
 // 用法：在編輯器 constructor 裡 HYSHELL.install(this, { fabDelay: 350 })；componentWillUnmount 裡呼叫 this.shellCleanup()。
 // Safari 修正：畫面用 CSS zoom 縮小時，Safari 回報的元素位置是「沒縮小前」的數字，導覽亮框、編輯視窗、框選都會錯位。
 // 這裡第一次量位置時先做一次小測試：瀏覽器會算錯才換算，Chrome 等正常的瀏覽器完全不受影響。
@@ -37,10 +37,11 @@
 })();
 (function () {
   const M = {
-    // 使用導覽按鈕：畫面顯示後滑入；第一次使用時慢慢呼吸發光，直到開始編輯或按下導覽。
+    // 使用導覽按鈕：畫面顯示後滑入，第一次使用時馬上開始呼吸發光，直到開始編輯或按下導覽。
+    // 同時頭像上方冒出對話框：先「…」1 秒，再換成整句話；10 秒後淡出（按鈕繼續發光），開始編輯或按 × 就收起。
     armFab() {
       if (this._fabArmed) return; this._fabArmed = true;
-      this._fabT = setTimeout(() => { this.setState({ fabIn: true }); this._fabT2 = setTimeout(() => this.tourGlow(), 1500); this.subPulse(); }, this._shellOpts.fabDelay);
+      this._fabT = setTimeout(() => { this.setState({ fabIn: true }); this.tourGlow(); this.subPulse(); }, this._shellOpts.fabDelay);
     },
     // 訂閱按鈕：每 60 秒信封放大搖晃一次（3 秒）；前景使用滿 20 分鐘響一聲輕叮，之後每 20 分鐘一次（兩頁共用計時）。⌘M／Ctrl+M 切換提示音。
     subPulse() {
@@ -54,16 +55,29 @@
         try { sessionStorage.setItem('hy-sub-use-ms', String(ms)); } catch (e) {}
       }, 5000);
       this._muteKey = (e) => {
-        if (!(e.metaKey || e.ctrlKey) || e.altKey || e.code !== 'KeyM') return;
+        if (!(e.metaKey || e.ctrlKey) || e.altKey) return;
+        // ⌘⇧L／Ctrl+Shift+L：匯出視窗開著時取消／加回 Logo（每次打開匯出視窗都重設成有 Logo）。
+        if (e.code === 'KeyL' && e.shiftKey) {
+          if (!this.state.exportOpen) return;
+          e.preventDefault();
+          const on = this.state.exportLogo === false;
+          this.setState({ exportLogo: on });
+          this.shellToast(on ? '已加回 Logo' : '已取消 Logo');
+          return;
+        }
+        if (e.code !== 'KeyM') return;
         e.preventDefault();
         if (e.shiftKey) { this.envShake(true, true); return; }
         const m = !this.subMuted();
         try { localStorage.setItem('hy-sub-mute', m ? '1' : '0'); } catch (er) {}
-        clearTimeout(this._toastT);
-        this.setState({ subToast: m ? '提示音已關閉' : '提示音已開啟' });
-        this._toastT = setTimeout(() => this.setState({ subToast: '' }), 1600);
+        this.shellToast(m ? '提示音已關閉' : '提示音已開啟');
       };
       window.addEventListener('keydown', this._muteKey);
+    },
+    shellToast(msg) {
+      clearTimeout(this._toastT);
+      this.setState({ subToast: msg });
+      this._toastT = setTimeout(() => this.setState({ subToast: '' }), 1600);
     },
     subBusy() { const s = this.state; return !!(s.tourOn || !s.fabIn || s.subOffer || s.intro); },
     subMuted() { try { return localStorage.getItem('hy-sub-mute') === '1'; } catch (e) { return false; } },
@@ -89,27 +103,40 @@
     tourGlow() {
       let seen = false; try { seen = localStorage.getItem('hy-tour-hinted') === '1'; } catch (e) {}
       if (seen || this._tgT) return;
-      this.setState({ tourGlow: true });
+      this.setState({ tourGlow: true, tourBub: 'dots' });
       this._tgT = setInterval(() => this.setState(s => ({ tourGlow: !s.tourGlow })), 1200);
+      clearTimeout(this._bubT);
+      this._bubT = setTimeout(() => {
+        this.setState({ tourBub: 'text' });
+        this._bubT = setTimeout(() => this.closeBub(), 10000);
+      }, 1000);
+    },
+    closeBub() {
+      clearTimeout(this._bubT); this._bubT = null;
+      if (!this.state.tourBub) return;
+      if (this.state.tourBub === 'dots') { this.setState({ tourBub: '' }); return; }
+      this.setState({ tourBub: 'out' });
+      this._bubT = setTimeout(() => { this._bubT = null; this.setState({ tourBub: '' }); }, 320);
     },
     stopGlow() {
       if (this._tgT) { clearInterval(this._tgT); this._tgT = null; }
       try { localStorage.setItem('hy-tour-hinted', '1'); } catch (e) {}
       if (this.state.tourGlow) this.setState({ tourGlow: false });
+      this.closeBub();
     },
     // Tweaks「測試」用：清掉提示記憶，從頭播一次開場、按鈕滑入與發光。不碰使用者資料。
     replayHints() {
       try { localStorage.removeItem('hy-tour-hinted'); } catch (e) {}
       if (this._tgT) { clearInterval(this._tgT); this._tgT = null; }
-      clearTimeout(this._introT); clearTimeout(this._fabT); clearTimeout(this._fabT2);
-      this._fabArmed = false;
-      this.setState({ fabIn: false, tourGlow: false, intro: true });
+      clearTimeout(this._introT); clearTimeout(this._fabT); clearTimeout(this._fabT2); clearTimeout(this._bubT); this._bubT = null;
+      this._fabArmed = false; this._editSeen = false;
+      this.setState({ fabIn: false, tourGlow: false, tourBub: '', intro: true });
       this._introT = setTimeout(() => this.setState({ intro: false }), 5000);
     },
     // 畫面關閉時：停掉所有計時器、移除快捷鍵、停止叮聲。
     shellCleanup() {
       ['_spT', '_dingT', '_dingFade', '_tgT'].forEach(k => { if (this[k]) clearInterval(this[k]); this[k] = null; });
-      ['_fabT', '_fabT2', '_envT', '_dingSndT', '_toastT', '_introT'].forEach(k => { if (this[k]) clearTimeout(this[k]); this[k] = null; });
+      ['_fabT', '_fabT2', '_envT', '_dingSndT', '_toastT', '_introT', '_bubT'].forEach(k => { if (this[k]) clearTimeout(this[k]); this[k] = null; });
       if (this._muteKey) { window.removeEventListener('keydown', this._muteKey); this._muteKey = null; }
       if (this._ding) { try { this._ding.pause(); } catch (e) {} }
     }
