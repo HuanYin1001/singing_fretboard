@@ -1,9 +1,9 @@
 {
-  "name": "Singing Fretboard 弦吟指板",
-  "short_name": "Singing Fretboard",
+  "name": "弦吟指板筆記 Singing Fretboard Notes",
+  "short_name": "弦吟指板",
   "lang": "zh-Hant",
   "dir": "ltr",
-  "description": "弦吟指板圖編輯器：建立、上色並匯出吉他音階指板圖。",
+  "description": "弦吟指板筆記：編輯吉他指板和和弦圖，匯出圖片與 PDF。",
   "start_url": "./",
   "scope": "./",
   "id": "singing-fretboard",

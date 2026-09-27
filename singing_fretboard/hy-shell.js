@@ -74,8 +74,20 @@
         }
         // ⌘⇧G／Ctrl+Shift+G（G＝Glow 發光）：導覽按鈕重新發光＋對話框，訂閱信封搖晃＋叮聲。只播一次，不動原本的計時。
         if (e.code === 'KeyG' && e.shiftKey) { e.preventDefault(); e.stopPropagation(); this.replayGlow(); this.envShake(true, true); return; }
+        // ⌘⇧X／Ctrl+Shift+X：重播開場動畫（導覽中不播）。
+        if (e.code === 'KeyX' && e.shiftKey) { e.preventDefault(); e.stopPropagation(); this.replayIntro(); return; }
       };
       window.addEventListener('keydown', this._muteKey, true);
+    },
+    replayIntro() {
+      if (this.state.tourOn) return;
+      // 看過開場的分頁會在 <head> 加一段隱藏開場的樣式，重播前先拿掉。
+      document.querySelectorAll('style').forEach(s => { if (s.textContent.indexOf('[data-hy-intro] > *') >= 0) s.remove(); });
+      clearTimeout(this._introT);
+      this.setState({ intro: false, exportOpen: false }, () => requestAnimationFrame(() => {
+        this.setState({ intro: true });
+        this._introT = setTimeout(() => this.setState({ intro: false }), 5000);
+      }));
     },
     shellToast(msg) {
       clearTimeout(this._toastT);
