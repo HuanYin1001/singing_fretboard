@@ -96,9 +96,11 @@
     const p = parseName(c.name);
     const dotMode = c.dotMode || doc.dotMode || 'finger';
     const sideMode = c.sideMode || doc.sideMode || 'note';
+    const rootOn = (c.rootMode || doc.rootMode || 'on') !== 'off'; // 顯示根音：關掉時根音跟一般圓點同色
     const vis = f => f >= sf && f < sf + F;
     const vc = { ...c, dots: c.dots.filter(d => vis(d.f)), barres: c.barres.filter(b => vis(b.f)) };
-    const isRoot = (s, f) => !!p && (O[s] + f) % 12 === p.pc;
+    const isPc = (s, f) => !!p && (O[s] + f) % 12 === p.pc;
+    const isRoot = (s, f) => rootOn && isPc(s, f);
     const labText = (s, f) => { const pc = (O[s] + f) % 12; return sideMode === 'note' ? names[pc] : sideMode === 'degree' && p ? degLabel((pc - p.pc + 12) % 12, p.q) : ''; };
     const dots = vc.dots.map(d => ({ s: d.s, col: d.f - sf, root: isRoot(d.s, d.f), t: dotMode === 'finger' ? (d.finger || '') : '' }));
     const barres = vc.barres.map(b => {
@@ -117,7 +119,7 @@
     for (let s = 0; s < 6; s++) marks.push({ s, type: c.marks[s] || '' });
     // 格數標籤：標在根音那格旁、寫根音的格數（以最低音那條弦上的根音為準）；沒有名稱或看不到根音時標第一格。
     let rf = sf;
-    if (p && sf > 1) { const sd = soundingFrets(vc); for (let s = 0; s < 6; s++) if (sd[s] >= sf && isRoot(s, sd[s])) { rf = sd[s]; break; } }
+    if (p && sf > 1) { const sd = soundingFrets(vc); for (let s = 0; s < 6; s++) if (sd[s] >= sf && isPc(s, sd[s])) { rf = sd[s]; break; } }
     return { F, sf, dots, barres, marks, side, frLabel: sf > 1 ? rf + 'fr' : '', frCol: rf - sf };
   }
   // 起始格移動時，圓點和封閉跟著一起移（像移調夾），空弦 O／× 不動。超出範圍回傳 null。
@@ -260,7 +262,7 @@
   }
   // 規則：最低音＝根音（斜線和弦＝斜線後的音）、至少 4 弦發聲、中間不夾不彈弦、必要音都要有、
   // 按格最多跨 4 格（五格圖放得下）、最多 4 指（封閉算 1 指）。
-  // 排序（2026-09-28）：① 前 3 格內有空弦的開放和弦（最多 3 個）→ ② 5 格內的封閉和弦（最多 3 個）→ ③ 5 格以後的 A 型、E 型封閉。
+  // 排序（2026-09-28）：① 0～4 格內有空弦的開放和弦（最多 3 個）→ ② 5 格內的封閉和弦（最多 3 個）→ ③ 5 格以後的 A 型、E 型封閉。
   // 斜線和弦只找 ①。lib：和弦庫清單，同名的按法排在所屬那一組最前面。回傳 null＝看不懂名稱；[]＝找不到。
   const LOOKUP_MAX = 8, OPEN_MAX = 3, BARRE5_MAX = 3;
   // A 型、E 型樣板：相對根音那格的位移（-1＝不彈）。E 型根音在第 6 弦，A 型根音在第 5 弦。
@@ -271,8 +273,9 @@
   // 非開放延伸和弦的可移動按法（2026-09-28 使用者在「查和弦按法 篩選」頁挑過）：相對最低按格的位移，-1＝不彈，最低發聲弦＝根音。
   // 有這個表的和弦種類，封閉按法只用這張表（不再自動找、不用 A／E 型樣板），而且可以中間夾不彈弦。
   // 使用者手動設定的特例（吉他上按不出完整組成音，交給把位或編曲補）：名稱照查詢的名稱，不看辨識；結果帶 `special: true`，自動測試跳過。
-  const MOVE_SP = { maj9: ['-1,-1,0,2,2,0'], 'maj♯11': ['-1,1,0,0,1,0'], '9': ['1,-1,1,0,1,-1', '-1,-1,0,2,1,0'] };
+  const MOVE_SP = { add9: ['-1,0,2,2,0,0'], maj9: ['-1,-1,0,2,2,0'], 'maj♯11': ['-1,1,0,0,1,0'], '9': ['1,-1,1,0,1,-1', '-1,-1,0,2,1,0'] };
   const MOVE = {
+    add9: [[-1, 0, 2, 2, 0, 0]],
     maj7: [[-1, 0, 2, 1, 2, 0], [0, -1, 1, 1, 0, -1], [-1, -1, 0, 2, 2, 2]],
     maj9: [[-1, 1, 0, 2, 1, -1], [-1, -1, 0, 2, 2, 0]],
     maj13: [[0, -1, 1, 1, 2, -1], [-1, 0, -1, 1, 2, 2], [1, 0, 0, 0, 1, 0]],
@@ -293,6 +296,23 @@
     '7♭5': [[1, -1, 1, 2, 0, -1], [-1, 0, 1, 0, 2, -1]],
     '7♯5': [[0, -1, 0, 1, 1, -1], [-1, 0, -1, 0, 2, 1]]
   };
+  const TRI_IV = [0, 3, 4, 6, 7, 8];
+  // 使用者逐一指定的按法（2026-09-28）：del＝拿掉、add＝加在最前面、only＝整組換掉。寫法 6 弦→1 弦，x＝不彈。結果帶 lib、special（自動規則測試跳過）。
+  const FIX = {
+    Eadd9: { del: ['0 2 2 1 0 2'], add: ['0 2 4 1 0 0'] },
+    Aadd9: { only: ['x 0 2 2 0 0', '5 7 7 6 0 0', 'x 0 7 9 10 7'] },
+    Fadd9: { del: ['1 0 3 0 1 1'], add: ['1 0 3 0 1 x'] },
+    Fmaj9: { del: ['1 0 2 0 1 1'] },
+    Fdim: { del: ['x x 3 1 0 1'], add: ['x x 3 1 0 x'] },
+    Cmaj7: { only: ['x 3 2 0 0 0', 'x 3 5 4 5 3', '8 x 9 9 8 x', 'x x 10 12 12 12'] },
+    Em7: { only: ['0 2 0 0 0 0', '0 2 2 0 3 0', '0 2 2 0 3 3', 'x 7 9 7 8 7', '12 14 12 12 12 12', '12 x 12 12 12 x'] },
+    G: { only: ['3 2 0 0 0 3', '3 2 0 0 3 3', '3 5 5 4 3 3', 'x 10 12 12 12 10'] },
+    Am: { only: ['x 0 2 2 1 0', '5 7 7 5 5 5'] },
+    Bm: { only: ['x 2 4 4 3 2', '7 9 9 7 7 7'] },
+    Bm7: { only: ['x 2 0 2 3 x', 'x 2 4 2 3 2', '7 9 7 7 7 7', '7 x 7 7 7 x'] },
+    'F♯m': { only: ['2 4 4 2 2 2', 'x 9 11 11 10 9'] },
+    'G♯m': { only: ['4 2 1 1 4 x', '4 6 6 4 4 4', 'x 11 13 13 12 11'] }
+  };
   function findShapes(raw, lib) {
     const sp = chordSpec(raw);
     if (!sp) return null;
@@ -311,7 +331,7 @@
       const fs = fr.filter(f => f > 0), open = fr.includes(0);
       const minF = fs.length ? Math.min(...fs) : 0, maxF = fs.length ? Math.max(...fs) : 0;
       if (fs.length && maxF - minF > 3) return;
-      if (open && maxF > 5) return;
+      if (open && maxF > 4) return;
       const sounding = hi - lo + 1;
       if (!open && sounding < 5 && maxF > 5) return;
       const b = barreOf(fr);
@@ -337,7 +357,9 @@
     list.sort((a, b) => a.score - b.score);
     const slash = sp.bass !== sp.root;
     const G = [[], [], []], seen = new Set(), key = fr => fr.map(f => f < 0 ? 'x' : f).join(',');
-    const grp = fr => { const fs = fr.filter(f => f > 0), mx = fs.length ? Math.max(...fs) : 0; return fr.includes(0) ? (mx <= 3 ? 0 : -1) : mx <= 5 ? 1 : 2; };
+    const grp = fr => { const fs = fr.filter(f => f > 0), mx = fs.length ? Math.max(...fs) : 0; return fr.includes(0) ? (mx <= 4 ? 0 : -1) : mx <= 5 ? 1 : 2; };
+    // 2026-09-28：開放和弦第 1 弦只是重複根音、又要另外用手指按（不在封閉裡）時，改成不彈。只套用在根音 F。
+    const dropTop = a => { const fr = a.frets; if (sp.root !== 5 || !fr.includes(0) || !(fr[5] > 0) || (O[5] + fr[5]) % 12 !== sp.root) return a; const b = a.barre; if (b && b.f === fr[5] && b.to >= 5) return a; const n = fr.slice(); n[5] = -1; if (n.filter(f => f >= 0).length < 4) return a; return { ...a, frets: n, barre: barreOf(n) }; };
     const add = (g, it) => { const c = key(it.frets); if (seen.has(c)) return; seen.add(c); G[g].push(it); };
     (lib || []).forEach(e => {
       const s2 = chordSpec(e.name);
@@ -349,7 +371,11 @@
       add(g, { frets: e.frets.slice(), barre: e.barre ? { ...e.barre } : null, lib: true });
     });
     const mv = hasK(MOVE, sp.tpl.q);
-    list.forEach(a => { const g = grp(a.frets); if (g === 0 || (g === 1 && !slash && !mv && a.barre)) add(g, { frets: a.frets, barre: a.barre, lib: false }); });
+    // 2026-09-28：電腦找的開放和弦，三和弦以外的音（含 6、♭♭7、♭7、7、9、11、13…）不能放在低音弦：根音在第 6 弦→不放第 5、6 弦；根音在第 5 弦→不放第 4～6 弦。和弦庫的按法不受影響。
+    const ext = new Set(sp.tpl.items.filter(i => !TRI_IV.includes(i.iv % 12)).map(pcOfIv));
+    const extLow = fr => { const lo = fr.findIndex(f => f >= 0), ban = lo === 0 ? [0, 1] : lo === 1 ? [0, 1, 2] : []; return ban.some(s => fr[s] >= 0 && ext.has((O[s] + fr[s]) % 12)); };
+    list = list.map(dropTop);
+    list.forEach(a => { const g = grp(a.frets); if (g === 0 && extLow(a.frets)) return; if (g === 0 || (g === 1 && !slash && !mv && a.barre)) add(g, { frets: a.frets, barre: a.barre, lib: false }); });
     if (!slash && mv) {
       MOVE[sp.tpl.q].map(rel => {
         const lo = rel.findIndex(f => f >= 0);
@@ -369,8 +395,26 @@
       });
       sh.sort((a, b) => a.r - b.r).forEach(x => add(x.r <= 5 ? 1 : 2, { frets: x.frets, barre: x.barre, lib: false }));
     }
-    return G[0].slice(0, OPEN_MAX).concat(G[1].slice(0, BARRE5_MAX), G[2]).slice(0, LOOKUP_MAX);
+    let out = G[0].slice(0, OPEN_MAX).concat(G[1].slice(0, BARRE5_MAX), G[2]);
+    // 2026-09-28：dim7 只列可移動形狀（MOVE），不列開放和弦。
+    if (sp.tpl.q === 'dim7' && !slash) out = out.filter(it => it.move);
+    const fk = Object.keys(FIX).find(k => { const s2 = chordSpec(k); return s2 && s2.key === sp.key; });
+    if (fk) {
+      const fx = FIX[fk], P = s => s.trim().split(/\s+/).map(t => t === 'x' ? -1 : +t);
+      const mk = s => { const fr = P(s); return { frets: fr, barre: barreOf(fr), lib: true, special: true, fix: true }; };
+      if (fx.only) out = fx.only.map(mk);
+      else {
+        const add = (fx.add || []).map(mk), drop = new Set((fx.del || []).concat(fx.add || []).map(s => P(s).join(',')));
+        out = add.concat(out.filter(it => !drop.has(it.frets.join(','))));
+      }
+    }
+    // 2026-09-28：根音 F 的和弦，最前面放一個根音在第 4 弦（第 3 格）、4 格內的按法（如 F＝xx3211、Fmaj7＝xx3210）。
+    if (sp.root === 5 && !slash && !/dim/.test(sp.tpl.q)) {
+      const r4 = Array.from(found.values()).filter(a => a.frets[0] < 0 && a.frets[1] < 0 && a.frets[2] === 3 && a.frets.slice(3).every(f => f >= 0) && Math.max(...a.frets) <= 4).sort((a, b) => a.score - b.score)[0];
+      if (r4) { const k4 = r4.frets.join(','); out = [{ frets: r4.frets, barre: r4.barre, lib: false, r4: true }].concat(out.filter(it => it.frets.join(',') !== k4)); }
+    }
+    return out.slice(0, LOOKUP_MAX);
   }
 
-  root.HYCH_MUSIC = { SHARP, FLAT, OPEN, DEG, FRET_OPTS, MAX_START, normF, segsOf, fixAcc, splitSlash, parseName, nameParts, degLabel, hasFretted, hasHigher, labShown, diagramModel, shiftChord, wrapLines, paginate, recognize, soundingFrets, suggestNames, chordSpec, findShapes, LOOKUP_MAX, OPEN_MAX, MOVE };
+  root.HYCH_MUSIC = { FIX, SHARP, FLAT, OPEN, DEG, FRET_OPTS, MAX_START, normF, segsOf, fixAcc, splitSlash, parseName, nameParts, degLabel, hasFretted, hasHigher, labShown, diagramModel, shiftChord, wrapLines, paginate, recognize, soundingFrets, suggestNames, chordSpec, findShapes, LOOKUP_MAX, OPEN_MAX, MOVE, TRI_IV };
 })(typeof window !== 'undefined' ? window : globalThis);

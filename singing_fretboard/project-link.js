@@ -132,8 +132,9 @@
     }
     list.sort(function (a, b) { return a.f - b.f || a.s - b.s; });
     var base = list.length ? list[0].f : sf, k = 1;
-    var dots = list.map(function (d) { var fg = Math.min(4, Math.max(k, d.f - base + 1)); k = fg + 1; return { s: d.s, f: d.f, finger: String(fg) }; });
-    return { id: id || ('c' + Date.now().toString(36) + 'fb'), name: '', note: '', startFret: sf, frets: n, dots: dots, barres: [], marks: marks, dotMode: null, sideMode: null };
+    // 從指板來的和弦不標指法、不顯示根音（2026-09-28）。
+    var dots = list.map(function (d) { return { s: d.s, f: d.f, finger: null }; });
+    return { id: id || ('c' + Date.now().toString(36) + 'fb'), name: '', note: '', startFret: sf, frets: n, dots: dots, barres: [], marks: marks, dotMode: null, sideMode: null, rootMode: 'off' };
   }
   function isBlankChord(c) { return !c.name && !c.note && !(c.dots || []).length && !(c.barres || []).length && !Object.keys(c.marks || {}).length; }
   // 把指板轉好的和弦加到和弦本最後面（和弦本只有一張空白和弦時直接取代它），並記下是哪一個，和弦編輯器打開時選取它。

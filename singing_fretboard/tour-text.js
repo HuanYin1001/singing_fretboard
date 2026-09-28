@@ -11,6 +11,7 @@ window.HYTOUR_TEXT = {
   ],
   ch: [
     { title: "整頁設定", body: "這裡的設定會套用到右方整頁和弦圖。\n個別和弦可以單獨選取修改。" },
+    { title: "查和弦按法", body: "輸入和弦名稱，就會列出幾種常用按法。\n用左右箭頭換一個，按「加入」就會放進和弦本。" },
     { title: "新增和弦", body: "按這裡加一張空白和弦圖。\napp 會自動辨識和弦，歡迎考考它。" },
     { title: "編輯和弦圖", body: "左鍵先選取和弦，可以「新增及刪除」圓點。\n拖曳可以畫封閉指型，按右鍵可以設定指法。" },
     { title: "編輯和弦", body: "選取和弦後會跳出「編輯和弦」視窗。\n可以修改和弦名稱、註解、位置和格數，也能單獨設定這個和弦的指法和音名級數。" },
@@ -23,7 +24,7 @@ window.HYTOUR_TEXT = {
 };
 window.HYTOUR_LS = 'hy-tour-text';
 // 每一步的代號（存檔用代號對應，之後插入新步驟也不會錯位）。
-window.HYTOUR_IDS = { fb: ['key', 'tuning', 'color', 'chord', 'ab', 'save', 'end'], ch: ['page', 'add', 'edit', 'pop', 'order', 'save', 'end'] };
+window.HYTOUR_IDS = { fb: ['key', 'tuning', 'color', 'chord', 'ab', 'save', 'end'], ch: ['page', 'lookup', 'add', 'edit', 'pop', 'order', 'save', 'end'] };
 // 舊格式（陣列、沒有代號）當時的步驟順序。
 var HYTOUR_OLD = { fb: ['key', 'tuning', 'color', 'chord', 'ab', 'save', 'end'], ch: ['page', 'add', 'edit', 'order', 'save', 'end'] };
 window.HYTOUR_get = function () {
