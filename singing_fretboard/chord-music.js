@@ -178,7 +178,7 @@
     ['6', '1 3 5 6'], ['m6', '1 ♭3 5 6'], ['add9', '1 3 (5) 9'], ['madd9', '1 ♭3 (5) 9'], ['6/9', '1 3 (5) 6 9'], ['mmaj7', '1 ♭3 (5) 7'],
     ['9', '1 3 (5) ♭7 9'], ['maj9', '1 3 (5) 7 9'], ['m9', '1 ♭3 (5) ♭7 9'], ['7♭9', '1 3 (5) ♭7 ♭9'], ['7♯9', '1 3 (5) ♭7 ♯9'],
     ['7♭5', '1 3 ♭5 ♭7'], ['7♯5', '1 3 ♯5 ♭7'], ['11', '1 (5) ♭7 (9) 11'], ['m11', '1 ♭3 (5) ♭7 (9) 11'], ['13', '1 3 (5) ♭7 (9) 13'],
-    ['maj13', '1 3 (5) 7 (9) 13'], ['maj7♯11', '1 3 (5) 7 ♯11']
+    ['maj13', '1 3 (5) 7 (9) 13'], ['maj♯11', '1 3 (5) 7 ♯11']
   ].map(([q, s]) => ({ q, items: s.split(' ').map(t => { const opt = t[0] === '('; const l = opt ? t.slice(1, -1) : t; return { l, iv: RLBL[l], opt }; }) }));
   // 分數越小越前面。省略一個音扣 0.25、和弦越複雜扣越多、斜線和弦扣 1.2（優先原位和弦）。
   const R_OMIT = 0.25, R_EXT = 0.15, R_SLASH = 1.2;
@@ -224,5 +224,153 @@
     return recognize(soundingFrets(c), open).slice(0, 1 + (n == null ? 2 : n)).map(r => r.name);
   }
 
-  root.HYCH_MUSIC = { SHARP, FLAT, OPEN, DEG, FRET_OPTS, MAX_START, normF, segsOf, fixAcc, splitSlash, parseName, nameParts, degLabel, hasFretted, hasHigher, labShown, diagramModel, shiftChord, wrapLines, paginate, recognize, soundingFrets, suggestNames };
+  // 查和弦按法（v2.4.2）：和弦辨識倒過來。名稱 → 同一份 RTPL 公式 → 在標準調弦指板上找按得到的組合。
+  const LQ = { '': '', maj: '', M: '', m: 'm', min: 'm', '-': 'm', '5': '5', dim: 'dim', '°': 'dim', o: 'dim', aug: 'aug', '+': 'aug',
+    sus2: 'sus2', sus4: 'sus4', sus: 'sus4', '7': '7', maj7: 'maj7', M7: 'maj7', 'Δ': 'maj7', 'Δ7': 'maj7', m7: 'm7', min7: 'm7', '-7': 'm7',
+    'm7♭5': 'm7♭5', 'ø': 'm7♭5', 'ø7': 'm7♭5', 'm7-5': 'm7♭5', dim7: 'dim7', '°7': 'dim7', o7: 'dim7', '7sus4': '7sus4', '7sus': '7sus4',
+    '6': '6', m6: 'm6', add9: 'add9', add2: 'add9', madd9: 'madd9', madd2: 'madd9', '6/9': '6/9', '69': '6/9', mmaj7: 'mmaj7', mM7: 'mmaj7', 'm(maj7)': 'mmaj7', minmaj7: 'mmaj7',
+    '9': '9', maj9: 'maj9', M9: 'maj9', m9: 'm9', '7♭9': '7♭9', '7♯9': '7♯9', '7♭5': '7♭5', '7♯5': '7♯5', '7+5': '7♯5',
+    '11': '11', m11: 'm11', '13': '13', maj13: 'maj13', M13: 'maj13', 'maj♯11': 'maj♯11', 'maj7♯11': 'maj♯11' };
+  const hasK = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+  // 名稱 → { root, bass, tpl, key }；看不懂回傳 null。
+  function chordSpec(raw) {
+    const sp = splitSlash(raw), m = sp.main.trim().match(/^([A-Ga-g])([#b♯♭]?)(.*)$/);
+    if (!m) return null;
+    const qr = m[3].replace(/\s+/g, '').replace(/#/g, '♯').replace(/b/g, '♭');
+    const look = k => hasK(LQ, k) ? LQ[k] : k.length > 2 && hasK(LQ, k.toLowerCase()) ? LQ[k.toLowerCase()] : null;
+    // 先照原樣找（C+＝增、C-＝小、C-7＝m7）；找不到再把 + 當 ♯、- 當 ♭（C7+5＝C7♯5、C7-9＝C7♭9）。
+    let q = look(qr);
+    if (q === null) q = look(qr.replace(/\+/g, '♯').replace(/-/g, '♭'));
+    if (q === null) return null;
+    const tpl = RTPL.find(t => t.q === q);
+    if (!tpl) return null;
+    const root = pcOf(m[1], m[2]), bass = sp.bass ? pcOf(sp.bass[0], sp.bass.slice(1)) : root;
+    return { root, bass, tpl, key: root + '|' + q + '|' + bass };
+  }
+  // 封閉：最低那格橫跨 2 條弦以上，中間的弦都有按格（不是空弦、不是不彈）。
+  function barreOf(fr) {
+    const fs = fr.filter(f => f > 0);
+    if (!fs.length) return null;
+    const f0 = Math.min(...fs), on = [];
+    fr.forEach((f, s) => { if (f === f0) on.push(s); });
+    if (on.length < 2) return null;
+    const from = on[0], to = on[on.length - 1];
+    for (let s = from; s <= to; s++) if (!(fr[s] >= f0)) return null;
+    return { f: f0, from, to };
+  }
+  // 規則：最低音＝根音（斜線和弦＝斜線後的音）、至少 4 弦發聲、中間不夾不彈弦、必要音都要有、
+  // 按格最多跨 4 格（五格圖放得下）、最多 4 指（封閉算 1 指）。
+  // 排序（2026-09-28）：① 前 3 格內有空弦的開放和弦（最多 3 個）→ ② 5 格內的封閉和弦（最多 3 個）→ ③ 5 格以後的 A 型、E 型封閉。
+  // 斜線和弦只找 ①。lib：和弦庫清單，同名的按法排在所屬那一組最前面。回傳 null＝看不懂名稱；[]＝找不到。
+  const LOOKUP_MAX = 8, OPEN_MAX = 3, BARRE5_MAX = 3;
+  // A 型、E 型樣板：相對根音那格的位移（-1＝不彈）。E 型根音在第 6 弦，A 型根音在第 5 弦。
+  const SHAPE_E = { '': [0, 2, 2, 1, 0, 0], m: [0, 2, 2, 0, 0, 0], '7': [0, 2, 0, 1, 0, 0], m7: [0, 2, 0, 0, 0, 0], maj7: [0, 2, 1, 1, 0, 0],
+    sus4: [0, 2, 2, 2, 0, 0], '7sus4': [0, 2, 0, 2, 0, 0], m6: [0, 2, 2, 0, 2, 0], '9': [0, 2, 0, 1, 0, 2] };
+  const SHAPE_A = { '': [-1, 0, 2, 2, 2, 0], m: [-1, 0, 2, 2, 1, 0], '7': [-1, 0, 2, 0, 2, 0], m7: [-1, 0, 2, 0, 1, 0], maj7: [-1, 0, 2, 1, 2, 0],
+    sus4: [-1, 0, 2, 2, 3, 0], sus2: [-1, 0, 2, 2, 0, 0], '7sus4': [-1, 0, 2, 0, 3, 0], 'm7♭5': [-1, 0, 1, 0, 1, -1] };
+  // 非開放延伸和弦的可移動按法（2026-09-28 使用者在「查和弦按法 篩選」頁挑過）：相對最低按格的位移，-1＝不彈，最低發聲弦＝根音。
+  // 有這個表的和弦種類，封閉按法只用這張表（不再自動找、不用 A／E 型樣板），而且可以中間夾不彈弦。
+  // 使用者手動設定的特例（吉他上按不出完整組成音，交給把位或編曲補）：名稱照查詢的名稱，不看辨識；結果帶 `special: true`，自動測試跳過。
+  const MOVE_SP = { maj9: ['-1,-1,0,2,2,0'], 'maj♯11': ['-1,1,0,0,1,0'], '9': ['1,-1,1,0,1,-1', '-1,-1,0,2,1,0'] };
+  const MOVE = {
+    maj7: [[-1, 0, 2, 1, 2, 0], [0, -1, 1, 1, 0, -1], [-1, -1, 0, 2, 2, 2]],
+    maj9: [[-1, 1, 0, 2, 1, -1], [-1, -1, 0, 2, 2, 0]],
+    maj13: [[0, -1, 1, 1, 2, -1], [-1, 0, -1, 1, 2, 2], [1, 0, 0, 0, 1, 0]],
+    'maj♯11': [[1, -1, 2, 2, 0, -1], [-1, 1, 0, 0, 1, 0]],
+    mmaj7: [[-1, 0, 2, 1, 1, 0], [0, -1, 1, 0, 0, 0]],
+    m7: [[-1, 0, 2, 0, 1, 0], [0, 2, 0, 0, 0, 0], [0, -1, 0, 0, 0, -1]],
+    m9: [[0, 2, 0, 0, 0, 2], [-1, 2, 0, 2, 2, -1]],
+    m11: [[-1, 2, 0, 2, 2, 0], [2, -1, 2, 2, 0, -1]],
+    'm7♭5': [[1, -1, 1, 1, 0, -1], [-1, 0, 1, 0, 1, -1], [-1, -1, 0, 1, 1, 1]],
+    dim7: [[1, -1, 0, 1, 0, -1], [-1, 1, 2, 0, 2, -1], [-1, -1, 0, 1, 0, 1]],
+    '7': [[-1, 0, 2, 0, 2, 0], [0, 2, 0, 1, 0, 0], [-1, -1, 0, 2, 1, 2]],
+    '7sus4': [[0, 2, 0, 2, 0, 0], [-1, 0, 2, 0, 3, 0], [-1, -1, 0, 2, 1, 3]],
+    '9': [[-1, 1, 0, 1, 1, -1], [1, -1, 1, 0, 1, -1], [-1, -1, 0, 2, 1, 0]],
+    '11': [[-1, 0, 0, 0, 0, 0], [2, -1, 2, 1, 0, -1]],
+    '13': [[-1, 0, 2, 0, 2, 2], [0, -1, 0, 1, 2, -1]],
+    '7♭9': [[-1, 1, 0, 1, 0, -1], [0, -1, 0, 1, 0, 1]],
+    '7♯9': [[-1, 1, 0, 1, 2, -1]],
+    '7♭5': [[1, -1, 1, 2, 0, -1], [-1, 0, 1, 0, 2, -1]],
+    '7♯5': [[0, -1, 0, 1, 1, -1], [-1, 0, -1, 0, 2, 1]]
+  };
+  function findShapes(raw, lib) {
+    const sp = chordSpec(raw);
+    if (!sp) return null;
+    const O = OPEN, pcOfIv = i => (sp.root + i.iv) % 12;
+    const allow = new Set(sp.tpl.items.map(pcOfIv)); allow.add(sp.bass);
+    const need = sp.tpl.items.filter(i => !i.opt).map(pcOfIv), opt = sp.tpl.items.filter(i => i.opt).map(pcOfIv);
+    const found = new Map();
+    const test = (fr) => {
+      let lo = -1, hi = -1;
+      fr.forEach((f, s) => { if (f >= 0) { if (lo < 0) lo = s; hi = s; } });
+      if (lo < 0 || hi - lo + 1 < 4) return;
+      for (let s = lo; s <= hi; s++) if (fr[s] < 0) return;
+      if ((O[lo] + fr[lo]) % 12 !== sp.bass) return;
+      const pcs = new Set(); fr.forEach((f, s) => { if (f >= 0) pcs.add((O[s] + f) % 12); });
+      if (need.some(p => !pcs.has(p))) return;
+      const fs = fr.filter(f => f > 0), open = fr.includes(0);
+      const minF = fs.length ? Math.min(...fs) : 0, maxF = fs.length ? Math.max(...fs) : 0;
+      if (fs.length && maxF - minF > 3) return;
+      if (open && maxF > 5) return;
+      const sounding = hi - lo + 1;
+      if (!open && sounding < 5 && maxF > 5) return;
+      const b = barreOf(fr);
+      let fingers = fs.length, barre = null;
+      if (fingers > 4) { if (!b) return; barre = b; fingers = 1 + fs.filter(f => f > b.f).length; if (fingers > 4) return; }
+      const code = fr.map(f => f < 0 ? 'x' : f).join(' ');
+      if (found.has(code)) return;
+      const omit = opt.filter(p => !pcs.has(p)).length;
+      // 有空弦但按到第 4、5 格的比較少見；整排封閉（E 型、A 型）是常用封閉，往前排。
+      const fullBarre = !!barre && sounding >= 5 && barre.from === lo && (barre.to === hi || barre.to === 5);
+      const score = omit * 1.5 + fingers * 0.4 + (6 - sounding) * 0.5 + (open ? Math.max(0, maxF - 3) : 1) + minF * 0.2 + (fs.length ? maxF - minF : 0) * 0.3 - (fullBarre ? 1.2 : 0);
+      found.set(code, { frets: fr.slice(), barre, score, sounding, code });
+    };
+    for (let w = 1; w <= 10; w++) {
+      const opts = O.map(o => { const a = [-1]; if (w <= 2 && allow.has(o)) a.push(0); for (let f = w; f < w + 4; f++) if (allow.has((o + f) % 12)) a.push(f); return a; });
+      const fr = [0, 0, 0, 0, 0, 0];
+      const rec = s => { if (s === 6) { test(fr); return; } for (const v of opts[s]) { fr[s] = v; rec(s + 1); } };
+      rec(0);
+    }
+    // 只差幾條可彈可不彈的弦：留發聲弦多的那個。
+    let list = Array.from(found.values());
+    list = list.filter(a => !list.some(b => b !== a && b.sounding > a.sounding && a.frets.every((f, s) => f < 0 || b.frets[s] === f)));
+    list.sort((a, b) => a.score - b.score);
+    const slash = sp.bass !== sp.root;
+    const G = [[], [], []], seen = new Set(), key = fr => fr.map(f => f < 0 ? 'x' : f).join(',');
+    const grp = fr => { const fs = fr.filter(f => f > 0), mx = fs.length ? Math.max(...fs) : 0; return fr.includes(0) ? (mx <= 3 ? 0 : -1) : mx <= 5 ? 1 : 2; };
+    const add = (g, it) => { const c = key(it.frets); if (seen.has(c)) return; seen.add(c); G[g].push(it); };
+    (lib || []).forEach(e => {
+      const s2 = chordSpec(e.name);
+      if (!s2 || s2.key !== sp.key) return;
+      const fs = e.frets.filter(f => f > 0);
+      if (fs.length && Math.max(...fs) - Math.min(...fs) > 4) return;
+      const g = e.frets.includes(0) ? 0 : grp(e.frets);
+      if (slash && g !== 0) return;
+      add(g, { frets: e.frets.slice(), barre: e.barre ? { ...e.barre } : null, lib: true });
+    });
+    const mv = hasK(MOVE, sp.tpl.q);
+    list.forEach(a => { const g = grp(a.frets); if (g === 0 || (g === 1 && !slash && !mv && a.barre)) add(g, { frets: a.frets, barre: a.barre, lib: false }); });
+    if (!slash && mv) {
+      MOVE[sp.tpl.q].map(rel => {
+        const lo = rel.findIndex(f => f >= 0);
+        let base = ((sp.root - O[lo] - rel[lo]) % 12 + 12) % 12;
+        if (base < 1) base = 12;
+        const fr = rel.map(f => f < 0 ? -1 : base + f);
+        return { base, frets: fr, barre: barreOf(fr), special: (MOVE_SP[sp.tpl.q] || []).includes(rel.join(',')) };
+      }).sort((a, b) => a.base - b.base).forEach(x => add(Math.max(...x.frets) <= 5 ? 1 : 2, { frets: x.frets, barre: x.barre, lib: false, move: true, special: x.special }));
+    } else if (!slash) {
+      const q = sp.tpl.q, sh = [];
+      [[SHAPE_E, 0], [SHAPE_A, 1]].forEach(([T, s]) => {
+        if (!hasK(T, q)) return;
+        const r = (sp.root - O[s] + 12) % 12;
+        if (r < 1) return;
+        const fr = T[q].map(d => d < 0 ? -1 : r + d);
+        sh.push({ r, frets: fr, barre: barreOf(fr) });
+      });
+      sh.sort((a, b) => a.r - b.r).forEach(x => add(x.r <= 5 ? 1 : 2, { frets: x.frets, barre: x.barre, lib: false }));
+    }
+    return G[0].slice(0, OPEN_MAX).concat(G[1].slice(0, BARRE5_MAX), G[2]).slice(0, LOOKUP_MAX);
+  }
+
+  root.HYCH_MUSIC = { SHARP, FLAT, OPEN, DEG, FRET_OPTS, MAX_START, normF, segsOf, fixAcc, splitSlash, parseName, nameParts, degLabel, hasFretted, hasHigher, labShown, diagramModel, shiftChord, wrapLines, paginate, recognize, soundingFrets, suggestNames, chordSpec, findShapes, LOOKUP_MAX, OPEN_MAX, MOVE };
 })(typeof window !== 'undefined' ? window : globalThis);
