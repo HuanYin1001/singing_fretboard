@@ -305,6 +305,7 @@
     Fmaj9: { del: ['1 0 2 0 1 1'] },
     Fdim: { del: ['x x 3 1 0 1'], add: ['x x 3 1 0 x'] },
     Cmaj7: { only: ['x 3 2 0 0 0', 'x 3 5 4 5 3', '8 x 9 9 8 x', 'x x 10 12 12 12'] },
+    Gm: { del: ['3 1 0 0 3 3'] },
     Em7: { only: ['0 2 0 0 0 0', '0 2 2 0 3 0', '0 2 2 0 3 3', 'x 7 9 7 8 7', '12 14 12 12 12 12', '12 x 12 12 12 x'] },
     G: { only: ['3 2 0 0 0 3', '3 2 0 0 3 3', '3 5 5 4 3 3', 'x 10 12 12 12 10'] },
     Am: { only: ['x 0 2 2 1 0', '5 7 7 5 5 5'] },
@@ -413,10 +414,10 @@
       const r4 = Array.from(found.values()).filter(a => a.frets[0] < 0 && a.frets[1] < 0 && a.frets[2] === 3 && a.frets.slice(3).every(f => f >= 0) && Math.max(...a.frets) <= 4).sort((a, b) => a.score - b.score)[0];
       if (r4) { const k4 = r4.frets.join(','); out = [{ frets: r4.frets, barre: r4.barre, lib: false, r4: true }].concat(out.filter(it => it.frets.join(',') !== k4)); }
     }
-    // 2026-09-28：不能有一根手指按兩根弦（只橫跨 2 弦的小封閉）。按格 4 個以內就改成每指各按一弦；超過 4 個又只能靠 2 弦封閉的按法拿掉。FIX（使用者指定）不動。
+    // 2026-09-28：不能有一根手指按兩根弦（只橫跨 2 弦的小封閉）。按格 4 個以內就改成每指各按一弦；超過 4 個又只能靠 2 弦封閉的按法拿掉。FIX（使用者指定）也套用，但只拿掉封閉線、不刪按法。
     out = out.map(it => {
-      if (it.fix || !it.barre || it.barre.to - it.barre.from + 1 !== 2) return it;
-      if (it.frets.filter(f => f > 0).length <= 4) return { ...it, barre: null };
+      if (!it.barre || it.barre.to - it.barre.from + 1 !== 2) return it;
+      if (it.fix || it.frets.filter(f => f > 0).length <= 4) return { ...it, barre: null };
       return null;
     }).filter(Boolean);
     return out.slice(0, LOOKUP_MAX);
