@@ -413,6 +413,12 @@
       const r4 = Array.from(found.values()).filter(a => a.frets[0] < 0 && a.frets[1] < 0 && a.frets[2] === 3 && a.frets.slice(3).every(f => f >= 0) && Math.max(...a.frets) <= 4).sort((a, b) => a.score - b.score)[0];
       if (r4) { const k4 = r4.frets.join(','); out = [{ frets: r4.frets, barre: r4.barre, lib: false, r4: true }].concat(out.filter(it => it.frets.join(',') !== k4)); }
     }
+    // 2026-09-28：不能有一根手指按兩根弦（只橫跨 2 弦的小封閉）。按格 4 個以內就改成每指各按一弦；超過 4 個又只能靠 2 弦封閉的按法拿掉。FIX（使用者指定）不動。
+    out = out.map(it => {
+      if (it.fix || !it.barre || it.barre.to - it.barre.from + 1 !== 2) return it;
+      if (it.frets.filter(f => f > 0).length <= 4) return { ...it, barre: null };
+      return null;
+    }).filter(Boolean);
     return out.slice(0, LOOKUP_MAX);
   }
 
