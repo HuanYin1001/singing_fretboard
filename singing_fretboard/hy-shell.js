@@ -35,6 +35,18 @@
     return new DOMRect(x, y, r.width * z, r.height * z);
   };
 })();
+// 空白鍵不按按鈕（2026-09-30）：瀏覽器預設「按鈕被點過後按 Space＝再按一次」，會跟指板的 Space 快速切換 A／B 搞混。
+// 所有按鈕一律改用 Enter 觸發（Enter 本來就可以）；打字的地方不受影響。指板自己的 Space 切換 A／B 照常。
+(function () {
+  if (window.__hySpaceGuard) return; window.__hySpaceGuard = true;
+  const guard = (e) => {
+    if (e.code !== 'Space' && e.key !== ' ') return;
+    const t = e.target, tag = t && t.tagName ? t.tagName.toLowerCase() : '';
+    if (tag === 'button' || tag === 'summary' || (t && t.getAttribute && t.getAttribute('role') === 'button') || (tag === 'input' && /^(button|submit|reset|checkbox|radio)$/i.test(t.type || ''))) e.preventDefault();
+  };
+  window.addEventListener('keydown', guard, true);
+  window.addEventListener('keyup', guard, true);
+})();
 (function () {
   const M = {
     // 使用導覽按鈕：畫面顯示後滑入，第一次使用時馬上開始呼吸發光，直到開始編輯或按下導覽。
