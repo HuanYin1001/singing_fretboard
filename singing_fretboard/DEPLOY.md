@@ -60,7 +60,13 @@
 3. **重要**：如果同時改了 `sw.js` 以外的檔案而使用者拿到舊版，把 `sw.js` 裡的
    `const VERSION = 'sf-v1';` 改成 `'sf-v2'`（依序遞增）再 push，所有裝置就會重新下載。
 
-### 本次更新（救急版 v3.0.3，`sf-v41`）
+### 本次更新（v3.0.4，`sf-v42`）
+
+- 修正：Barlow、Barlow Condensed 字體從 v2.4.0 起沒有成功從 Google Fonts 載入（網址用了可變字體寫法，Google 會略過 Barlow）。改成逐一列出字重的寫法。電腦上沒有安裝 Barlow 的使用者（多數學生、手機）之前看到的是替代字體，這版起會看到正確字體。
+- `lang="zh-Hant"` 維持拿掉（v3.0.3）。要加回去必須先修 Design System 的 `:lang(zh)` 行高規則，否則圓點文字會跑掉。
+- 更新 `index.html`、`chord.html`、`sw.js`。
+
+### 前次更新（救急版 v3.0.3，`sf-v41`）
 
 - 修正：圓點文字位置跑掉（Chrome、Safari 都會）。原因是 v3.0.1 加了 `lang="zh-Hant"`，而 Barlow 字體一直沒載入成功，瀏覽器改用中文字體顯示英文字母。暫時拿掉兩頁的 `lang="zh-Hant"`（外層與打包內容各一處）。
 - 根本修正（Google Fonts 網址讓 Barlow 真的載入、再加回 `lang`）留給下一版。
