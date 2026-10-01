@@ -60,7 +60,20 @@
 3. **重要**：如果同時改了 `sw.js` 以外的檔案而使用者拿到舊版，把 `sw.js` 裡的
    `const VERSION = 'sf-v1';` 改成 `'sf-v2'`（依序遞增）再 push，所有裝置就會重新下載。
 
-### 本次更新（打包版 v3，編輯器 v3，`sf-v37`）
+### 本次更新（打包版 v3.0.1，`sf-v39`）
+
+- 查和弦按法：改用 ↑ ↓ 鍵切換建議和弦，← → 留給輸入框打字。
+- 開放和弦按法依「開放和弦確認表」整理（刪除不用的、加入新的，涵蓋大三、小三、七、小七、大七、sus、add9、六、九、減、增、半減七等）。
+- 更新 `index.html`、`chord.html`、`chord-music.js`、`sw.js`，其他 `.js` 內容沒變，一併覆蓋即可。
+
+### 前次更新（打包版 v3 SEO 補充，`sf-v38`）
+
+- 搜尋引擎基本設定：兩頁加上語言標記 `lang="zh-Hant"`、正式網址（canonical）；`index.html` 的分享網址改成網域根目錄 `https://fretboard.huanyinliu.com/`。
+- 新增 `robots.txt`、`sitemap.xml`，要一起上傳（不用列進 `sw.js` 離線清單）。
+- 編輯器內容沒有改變。更新 `index.html`、`chord.html`、`sw.js`，新增 `robots.txt`、`sitemap.xml`。
+- 上線後到 Google Search Console 用 DNS 驗證 `huanyinliu.com`，再送出 `https://fretboard.huanyinliu.com/sitemap.xml`。
+
+### 前次更新（打包版 v3，編輯器 v3，`sf-v37`）
 
 - 指板介面簡化：調弦收到指板右上角按鈕、音階下方一顆「套入音階／清空音階」鍵、快速切換 A／B 預設收起、音階和儲存清單改成自己的下拉選單、整頁會等比縮小。
 - 檔案視窗：兩頁都有「開新專案」（先問要不要儲存）、「目前的修改還沒存成專案檔」提示；和弦的「匯出圖片」移進檔案視窗。和弦頁調弦按鈕和小視窗改成跟指板一樣。
