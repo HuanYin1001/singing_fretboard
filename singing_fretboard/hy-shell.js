@@ -3,6 +3,7 @@
 // Safari 修正：畫面用 CSS zoom 縮小時，Safari 回報的元素位置是「沒縮小前」的數字，導覽亮框、編輯視窗、框選都會錯位。
 // 這裡第一次量位置時先做一次小測試：瀏覽器會算錯才換算，Chrome 等正常的瀏覽器完全不受影響。
 (function () {
+  if (window.__hyZoomFix) return; window.__hyZoomFix = 1;
   const P = Element.prototype, nat = P.getBoundingClientRect;
   let cal = null;
   function calibrate() {
@@ -35,6 +36,52 @@
     return new DOMRect(x, y, r.width * z, r.height * z);
   };
 })();
+// 字體載入：等 Barlow／Barlow Condensed 真的載入完成（Google 樣式表可能還沒到，最多等約 6 秒）。畫指板、匯出前用 window.HY_FONTS_READY。
+window.HY_FONTS_READY = (function () {
+  if (!document.fonts || !document.fonts.load) return Promise.resolve();
+  const specs = ['400 16px "Barlow"', '600 16px "Barlow"', '700 16px "Barlow"', '600 16px "Barlow Condensed"', '700 16px "Barlow Condensed"'];
+  return new Promise(res => {
+    let n = 0;
+    (function go() {
+      Promise.all(specs.map(s => document.fonts.load(s, 'Aa1\u266f\u266d'))).then(r => {
+        if (r.every(a => a && a.length) || ++n > 20) res(); else setTimeout(go, 300);
+      }).catch(res);
+    })();
+  });
+})();
+/*HYTRACK-START*/
+// GA4 送出函式（兩頁共用）。只在正式網址送出；window.gtag 不存在（Design 預覽、離線、被擋）時安靜跳過。
+// 事件名稱固定，不要改名；新增事件要先加進 DEPLOY.md「GA4 規則」的表。不送任何個人資料（標題、檔名、輸入的文字）。
+(function () {
+  if (window.hyTrack) return;
+  var HOST = 'fretboard.huanyinliu.com';
+  var OK = {
+    export_image: { format: ['png', 'jpg'] },
+    save_project: { method: ['save', 'save_as'] },
+    open_project: {},
+    new_project: {},
+    chord_lookup: { chord_name: 20 },
+    tour_start: {},
+    tour_complete: {},
+    subscribe_click: {}
+  };
+  function hyTrack(name, p) {
+    try {
+      if (!OK[name] || location.hostname !== HOST || typeof window.gtag !== 'function') return;
+      var o = { editor: /chord/.test(location.pathname) ? 'chord' : 'fretboard' }, spec = OK[name];
+      p = p || {};
+      Object.keys(spec).forEach(function (k) {
+        var v = p[k], r = spec[k];
+        if (Array.isArray(r)) { if (r.indexOf(v) >= 0) o[k] = v; }
+        else if (typeof v === 'string' && v) o[k] = v.slice(0, r);
+      });
+      window.gtag('event', name, o);
+    } catch (e) {}
+  }
+  hyTrack.events = Object.keys(OK);
+  window.hyTrack = hyTrack;
+})();
+/*HYTRACK-END*/
 // 空白鍵不按按鈕（2026-09-30）：瀏覽器預設「按鈕被點過後按 Space＝再按一次」，會跟指板的 Space 快速切換 A／B 搞混。
 // 所有按鈕一律改用 Enter 觸發（Enter 本來就可以）；打字的地方不受影響。指板自己的 Space 切換 A／B 照常。
 (function () {

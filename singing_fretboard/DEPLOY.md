@@ -60,11 +60,53 @@
 3. **重要**：如果同時改了 `sw.js` 以外的檔案而使用者拿到舊版，把 `sw.js` 裡的
    `const VERSION = 'sf-v1';` 改成 `'sf-v2'`（依序遞增）再 push，所有裝置就會重新下載。
 
-### 本次更新（v3.0.4，`sf-v42`）
+### 本次更新（v3.0.5 正式上線，`sf-v45`，2026-10-02）
+
+- 從現行編輯器（v3.0.5 指板／和弦／導覽）重新打包 `index.html`、`chord.html`，包含 `sf-v44` 之後在編輯器裡做的修改。
+- 指板頁 PWA 設定原本重複兩份，整理成一份。
+- GA4、SEO 標籤、米色讀取畫面、Safari 縮放校正沿用 `sf-v44` 的設定。
+- **這次要上傳**：`index.html`、`chord.html`、`sw.js`、`DEPLOY.md`。
+
+### 上一次更新（v3.0.5，`sf-v44`）
+
+- 搜尋引擎標籤：兩頁「頁面本身」的 `<head>`（打包檔展開後留下的那份）都有 title、description、canonical、og、twitter。外層原本那份保留。和弦頁改用自己的標題「和弦圖編輯器｜弦吟指板筆記 Singing Fretboard Notes」與介紹，`document.title` 也一致。
+- GA4 使用量追蹤：追蹤碼只放在打包檔**外層** `<head>`（`<meta charset>` 後面）。目前 ID 還是假的 `G-XXXXXXXXXX`，**換成真的 ID 之前不會送出任何資料**。換法：兩頁外層搜尋 `G-XXXXXXXXXX` 各改一處。只在 `fretboard.huanyinliu.com` 送出。事件由 `hy-shell.js` 的 `hyTrack` 送出。
+- 匯出圖片後的訂閱視窗下方加一行小字：「本網站使用 Google Analytics 統計匿名使用數據，用於改善工具。」
+- **這次要上傳**：`index.html`、`chord.html`、`sw.js`。`hy-shell.js` 也有更新，一併覆蓋（但頁面實際讀的是內嵌在 HTML 裡的那份）。
+- **注意**：資料夾裡其他 `.js` 檔目前都是內嵌在 HTML 裡的副本，只改這些檔案不會生效，一定要重新打包 `index.html`、`chord.html`。
+- 導覽文字改成從外部 `tour-text.js` 讀取、`sw.js` 文字檔網路優先：這次還沒做。
+
+### GA4 規則
+
+- 追蹤碼只放外層 `<head>`，緊接在 `<meta charset>` 後面，**不要刪除**；template 裡不要放，否則同一次瀏覽會被算兩次。
+- 只在 `fretboard.huanyinliu.com` 送出；Design 預覽、本機、其他網址一律不送。
+- 事件名稱固定，**不要改名**（改名會讓前後數據接不起來）。新增事件要先把名稱加進下表，再改 `hy-shell.js` 的 `hyTrack`。
+- 不送任何個人資料：不送專案標題、檔名、輸入的文字。
+
+| 事件名稱 | 什麼時候送 | 參數 |
+|---|---|---|
+| `export_image` | 匯出圖片成功 | editor、format（png／jpg） |
+| `save_project` | 儲存或另存專案檔 | editor、method（save／save_as） |
+| `open_project` | 成功開啟專案檔 | editor |
+| `new_project` | 執行開新專案 | editor |
+| `chord_lookup` | 查和弦按法且查得到 | editor、chord_name（最多 20 字） |
+| `tour_start` | 開始使用導覽 | editor |
+| `tour_complete` | 導覽走到最後一步 | editor |
+| `subscribe_click` | 點擊左下「訂閱」按鈕 | editor |
+
+瀏覽量（`page_view`）由 GA4 自動記錄。
+
+### 前次更新（v3.0.5 第一版，`sf-v43`）
+
+- 讀取畫面：打包檔載入時只顯示米色底。「Unpacking...」文字藏起來，中間的小圖（六條線加琥珀圓點）整個刪除，不再留在檔案裡。**以後每次打包都要照做**（測試頁「打包版」組會檢查）。
+- 字體：打包版載入時等 Barlow、Barlow Condensed 真的載入完成才重畫（`HY_FONTS_READY`）。導覽元件拿掉會 404 的 `_ds/…/styles.css` 連結（樣式本來就內嵌在頁面裡）。
+- Safari 縮放校正：外層、`safari-zoom-fix.js`、`hy-shell.js` 三處都加「只執行一次」保護。
+- 更新 `index.html`、`chord.html`、`sw.js`、`hy-shell.js`、`safari-zoom-fix.js`。
+
+### 前次更新（v3.0.4，`sf-v42`）
 
 - 修正：Barlow、Barlow Condensed 字體從 v2.4.0 起沒有成功從 Google Fonts 載入（網址用了可變字體寫法，Google 會略過 Barlow）。改成逐一列出字重的寫法。電腦上沒有安裝 Barlow 的使用者（多數學生、手機）之前看到的是替代字體，這版起會看到正確字體。
 - `lang="zh-Hant"` 維持拿掉（v3.0.3）。要加回去必須先修 Design System 的 `:lang(zh)` 行高規則，否則圓點文字會跑掉。
-- 更新 `index.html`、`chord.html`、`sw.js`。
 
 ### 前次更新（救急版 v3.0.3，`sf-v41`）
 

@@ -1,6 +1,7 @@
 // Safari 縮放校正：Safari 量「有 zoom 的元素」位置時會偏掉，這裡改成跟 Chrome 一樣的畫面座標。
 // 其他瀏覽器自動偵測為正常，不做任何事。上線版打包檔 <head> 裡是同一段。
 (function () {
+  if (window.__hyZoomFix) return; window.__hyZoomFix = 1;
   const P = Element.prototype, nat = P.getBoundingClientRect;
   let cal = null;
   function calibrate() {
