@@ -6,6 +6,11 @@
   if (window.__hyZoomFix) return; window.__hyZoomFix = 1;
   const P = Element.prototype, nat = P.getBoundingClientRect;
   let cal = null;
+  // 2026-10-02：測試結果只在「量得到、數字合理」時才記住；視窗大小／瀏覽器縮放改變、頁面切回前景、載入完成後都重測。
+  // 以前第一次量就永久記住：如果剛好量在畫面還沒排好的瞬間，之後所有有 zoom 的小視窗（調弦、框選選單）位置都會被算錯，連 Chrome 也會。
+  const reset = () => { cal = null; };
+  ['resize', 'load', 'pageshow', 'visibilitychange'].forEach(n => window.addEventListener(n, reset));
+  window.addEventListener('load', () => setTimeout(reset, 1500));
   function calibrate() {
     if (cal) return cal;
     if (!document.body) return { ok: true };
@@ -19,6 +24,8 @@
     box.remove();
     // 真正位置：a 在 (300+20, 200+20)，b 在 (300+100, 200+100)，寬 5。
     const Ax = (rb.left - ra.left) / 80, Ay = (rb.top - ra.top) / 80;
+    // 量不到（畫面還沒排好、被藏起來）或數字不合理：這次先當作正常，不記住，下次再測。
+    if (!(rx.width > 1) || !(Ax > 0.3 && Ax < 3.5) || !(Ay > 0.3 && Ay < 3.5)) return { ok: true };
     if (Math.abs(Ax - 1) < 0.05 && Math.abs(Ay - 1) < 0.05) return (cal = { ok: true });
     const Bx = ra.left - Ax * 320, By = ra.top - Ay * 220;
     const k = Math.log(Ax) / Math.log(2);
@@ -61,6 +68,7 @@ window.HY_FONTS_READY = (function () {
     open_project: {},
     new_project: {},
     chord_lookup: { chord_name: 20 },
+    first_edit: {},
     tour_start: {},
     tour_complete: {},
     subscribe_click: {}
