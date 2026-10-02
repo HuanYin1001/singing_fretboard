@@ -3,7 +3,7 @@
 // 只放資料規則（調弦、拼法、檔案格式），不碰畫面。規則寫在專案的 CLAUDE.md。
 (function (root) {
   var NS = 'hy-fb-v2_2-';                // v2.2 的倉庫名稱（從空白開始，不搬舊資料）
-  var PROJ_V = 2;                        // 合併後的專案檔版本（v1 = 只有指板）
+  var PROJ_V = 3;                        // 專案檔版本（v1 = 只有指板、v2 = 指板＋和弦、v3 = 加上指板分頁；v2 仍可開，只是只有一頁）
   var FB_SCHEMA_V = 1;                   // 指板「目前狀態」的格式版本，要跟 fretboard-storage.js 的 LS_SCHEMA_V 一樣
   var KEYS = { fb: NS + 'current', chord: NS + 'chord-doc', chordSig: NS + 'chord-savedSig', chordPrev: NS + 'chord-prev', chordNew: NS + 'chord-new' };
   var SHARP = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
@@ -75,6 +75,7 @@
       app: 'singing-fretboard', v: PROJ_V, savedAt: now || new Date().toISOString(),
       d: fb.d || null, colorNames: fb.colorNames, slotA: fb.slotA || null, slotB: fb.slotB || null,
       active: fb.active || null, legendOrder: fb.legendOrder, shapes: fb.shapes,
+      tabs: fb.tabs || null, tabIdx: fb.tabIdx || 0,
       chords: chords || null
     };
   }
@@ -97,7 +98,13 @@
     return { fb: o.d ? fbPart(o) : null, fbMode: o.d ? 'replace' : 'keep', chords: o.chords || null, chordsMode: 'replace' };
   }
   function fbPart(o) {
-    return { d: o.d, colorNames: o.colorNames, slotA: o.slotA || null, slotB: o.slotB || null, active: o.active || null, legendOrder: o.legendOrder, shapes: o.shapes };
+    return { d: o.d, colorNames: o.colorNames, slotA: o.slotA || null, slotB: o.slotB || null, active: o.active || null, legendOrder: o.legendOrder, shapes: o.shapes, tabs: Array.isArray(o.tabs) ? o.tabs : null, tabIdx: o.tabIdx || 0 };
+  }
+  // 和弦頁用：目前連動的指板分頁名稱（只有一頁時回傳 null）。
+  function tabInfo(fb) {
+    var t = fb && fb.tabs; if (!Array.isArray(t) || t.length < 2) return null;
+    var i = Math.min(fb.tabIdx || 0, t.length - 1), e = t[i] || {};
+    return e.n || (fb.d && fb.d.title) || ('指板 ' + (i + 1));
   }
 
   // 瀏覽器裡的指板狀態（格式跟指板自動存檔一樣）。
@@ -151,7 +158,7 @@
     NS: NS, PROJ_V: PROJ_V, FB_SCHEMA_V: FB_SCHEMA_V, KEYS: KEYS, STD: STD, STD_NAME: STD_NAME,
     chordOpen: chordOpen, tuningLetters: tuningLetters, tuningName: tuningName, spellingOf: spellingOf,
     respellNote: respellNote, respellName: respellName, respellDoc: respellDoc, sig: sig, fileName: fileName, safeName: safeName,
-    buildProject: buildProject, parseAny: parseAny, fbPart: fbPart,
+    buildProject: buildProject, parseAny: parseAny, fbPart: fbPart, tabInfo: tabInfo,
     read: read, write: write, readFb: readFb, writeFb: writeFb, readChords: readChords, replaceChords: replaceChords, markChordsSaved: markChordsSaved,
     selFretCount: selFretCount, selToChord: selToChord, addChord: addChord
   };
