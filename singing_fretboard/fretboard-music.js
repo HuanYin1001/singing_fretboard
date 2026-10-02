@@ -12,8 +12,8 @@
     { t: '自然小調 Minor', iv: [0, 2, 3, 5, 7, 8, 10], dg: ['1', '2', '♭3', '4', '5', '♭6', '♭7'] },
     { t: '大調五聲 Major Pent.', iv: [0, 2, 4, 7, 9], dg: ['1', '2', '3', '5', '6'] },
     { t: '小調五聲 Minor Pent.', iv: [0, 3, 5, 7, 10], dg: ['1', '♭3', '4', '5', '♭7'] },
-    { t: '小調藍調 Minor Blues', iv: [0, 3, 5, 6, 10], dg: ['1', '♭3', '4', '♭5', '♭7'] },
-    { t: '大調藍調 Major Blues', iv: [0, 2, 3, 7, 9], dg: ['1', '2', '♭3', '5', '6'] },
+    { t: '小調藍調 Minor Blues', iv: [0, 3, 5, 6, 7, 10], dg: ['1', '♭3', '4', '♭5', '5', '♭7'], blue: 6 },
+    { t: '大調藍調 Major Blues', iv: [0, 2, 3, 4, 7, 9], dg: ['1', '2', '♭3', '3', '5', '6'], blue: 3 },
     { t: '多利安 Dorian', iv: [0, 2, 3, 5, 7, 9, 10], dg: ['1', '2', '♭3', '4', '5', '6', '♭7'] },
     { t: '弗里吉安 Phrygian', iv: [0, 1, 3, 5, 7, 8, 10], dg: ['1', '♭2', '♭3', '4', '5', '♭6', '♭7'] },
     { t: '利底安 Lydian', iv: [0, 2, 4, 6, 7, 9, 11], dg: ['1', '2', '3', '♯4', '5', '6', '7'] },
@@ -23,10 +23,14 @@
     { t: '旋律小調 Melodic Minor', iv: [0, 2, 3, 5, 7, 9, 11], dg: ['1', '2', '♭3', '4', '5', '6', '7'] },
     { t: '變化音階 Altered', iv: [0, 1, 3, 4, 6, 8, 10], dg: ['1', '♭9', '♯9', '3', '♭5', '♭13', '♭7'] },
     { t: '利底安屬 Lydian Dominant', iv: [0, 2, 4, 6, 7, 9, 10], dg: ['1', '2', '3', '♯4', '5', '6', '♭7'] },
-    { t: '全音音階 Whole Tone', iv: [0, 2, 4, 6, 8, 10], dg: ['1', '2', '3', '♯4', '♯5', '♭7'] },
+    { t: '全音階 Whole Tone', iv: [0, 2, 4, 6, 8, 10], dg: ['1', '2', '3', '♯4', '♯5', '♭7'] },
     { t: '半全減音階 H-W Dim.', iv: [0, 1, 3, 4, 6, 7, 9, 10], dg: ['1', '♭9', '♯9', '3', '♯11', '5', '13', '♭7'] },
-    { t: '全半減音階 W-H Dim.', iv: [0, 2, 3, 5, 6, 8, 9, 11], dg: ['1', '2', '♭3', '4', '♭5', '♭6', '6', '7'] }
+    { t: '全半減音階 W-H Dim.', iv: [0, 2, 3, 5, 6, 8, 9, 11], dg: ['1', '2', '♭3', '4', '♭5', '♭6', '6', '7'] },
+    // 2026-10-02 新增。存檔用編號記音階，新音階一律加在最後；選單順序看 SCALE_ORDER。
+    { t: '弗里吉安屬 Phrygian Dominant', iv: [0, 1, 4, 5, 7, 8, 10], dg: ['1', '♭2', '3', '4', '5', '♭6', '♭7'] }
   ];
+  // 選單顯示順序（SCALES 的編號）。
+  var SCALE_ORDER = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 18, 12, 13, 14, 15, 16, 17];
 
   var TUNINGS = [
     { t: 'Standard　E A D G B E', pc: [4, 11, 7, 2, 9, 4] },
@@ -81,14 +85,17 @@
     return (keyPc + (shift || 0)) % 12;
   }
 
-  // 自動填滿音階：回傳 { '弦-格': 1（主音）或 0（其他音階音） }。
+  // 藍調音（blue，相對主音的半音數）用色票 5「蜜金」。
+  function blueOf(ekey, scaleId) { var b = SCALES[scaleId].blue; return b === undefined ? -1 : (ekey + b) % 12; }
+
+  // 自動填滿音階：回傳 { '弦-格': 1（主音）、5（藍調音）或 0（其他音階音） }。
   function fillT(keyPc, scaleId, tun, frets, shift) {
     var ekey = ekeyOf(keyPc, shift);
-    var deg = degMap(ekey, scaleId), notes = {};
+    var deg = degMap(ekey, scaleId), notes = {}, bl = blueOf(ekey, scaleId);
     for (var i = 0; i < 6; i++) {
       for (var f = 0; f <= frets; f++) {
         var pc = (tun[i] + f) % 12;
-        if (deg[pc] !== undefined) notes[i + '-' + f] = pc === ekey ? 1 : 0;
+        if (deg[pc] !== undefined) notes[i + '-' + f] = pc === ekey ? 1 : pc === bl ? 5 : 0;
       }
     }
     return notes;
@@ -104,8 +111,8 @@
   }
 
   window.HYFB_MUSIC = {
-    SHARP: SHARP, FLAT: FLAT, FLATKEYS: FLATKEYS, SCALES: SCALES, TUNINGS: TUNINGS,
+    SHARP: SHARP, FLAT: FLAT, FLATKEYS: FLATKEYS, SCALES: SCALES, SCALE_ORDER: SCALE_ORDER, TUNINGS: TUNINGS,
     CHROM_DEG: CHROM_DEG, NAT: NAT, NATL: NATL, MARK1: MARK1, MARK2: MARK2,
-    geo: geo, spelling: spelling, degMap: degMap, degLabel: degLabel, ekeyOf: ekeyOf, fillT: fillT, prune: prune
+    geo: geo, spelling: spelling, degMap: degMap, degLabel: degLabel, ekeyOf: ekeyOf, blueOf: blueOf, fillT: fillT, prune: prune
   };
 })();

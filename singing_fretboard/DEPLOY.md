@@ -60,7 +60,18 @@
 3. **重要**：如果同時改了 `sw.js` 以外的檔案而使用者拿到舊版，把 `sw.js` 裡的
    `const VERSION = 'sf-v1';` 改成 `'sf-v2'`（依序遞增）再 push，所有裝置就會重新下載。
 
-### 本次更新（v3.0.6，`sf-v47`，2026-10-02）
+### 本次更新（v3.0.7，`sf-v49`，2026-10-02）
+
+- 從現行編輯器（v3.0.7，由 v3.0.6 改名）重新打包 `index.html`、`chord.html`，補上之前沒打包的修改：空白指板選主音／音階不自動填滿（要按「套入音階」）、⌘＋右鍵設為主音、新音階「弗里吉安屬 Phrygian Dominant」、大調藍調組成音修正與藍調音標記。
+- GA4（`G-0HR4FRCV72`）、SEO、米色讀取畫面沿用。`app/` 裡的 .js 跟編輯器同步。
+- **這次要上傳**：`index.html`、`chord.html`、`sw.js`、`DEPLOY.md`、`fretboard-music.js`（其餘 .js 一併覆蓋）。
+
+### 前次更新（v3.0.6 GA4 啟用，`sf-v48`，2026-10-02）
+
+- GA4 換成正式評估 ID `G-0HR4FRCV72`（跟個人網站 huanyinliu.com 同一個資源）。只在 `fretboard.huanyinliu.com` 送出資料；GA4 報表用「主機名稱」篩選即可只看指板編輯器。
+- **這次要上傳**：`index.html`、`chord.html`、`sw.js`、`DEPLOY.md`。
+
+### 前次更新（v3.0.6，`sf-v47`，2026-10-02）
 
 - 開場動畫改版：底色換成編輯器的筆記網格；左邊 logo、右邊「弦吟指板筆記」＋ Singing Fretboard Notes，文字出現後五顆深色圓點散落在文字周圍（原本的六條線拿掉）。指板、和弦兩頁一樣。
 - 從現行編輯器（v3.0.6）重新打包 `index.html`、`chord.html`；GA4、SEO、米色讀取畫面沿用。v3.0.5 的打包檔備份在「部署備份 backup」。
@@ -83,7 +94,7 @@
 ### 上一次更新（v3.0.5，`sf-v44`）
 
 - 搜尋引擎標籤：兩頁「頁面本身」的 `<head>`（打包檔展開後留下的那份）都有 title、description、canonical、og、twitter。外層原本那份保留。和弦頁改用自己的標題「和弦圖編輯器｜弦吟指板筆記 Singing Fretboard Notes」與介紹，`document.title` 也一致。
-- GA4 使用量追蹤：追蹤碼只放在打包檔**外層** `<head>`（`<meta charset>` 後面）。目前 ID 還是假的 `G-XXXXXXXXXX`，**換成真的 ID 之前不會送出任何資料**。換法：兩頁外層搜尋 `G-XXXXXXXXXX` 各改一處。只在 `fretboard.huanyinliu.com` 送出。事件由 `hy-shell.js` 的 `hyTrack` 送出。
+- GA4 使用量追蹤：追蹤碼只放在打包檔**外層** `<head>`（`<meta charset>` 後面）。ID 已於 `sf-v48` 換成正式的 `G-0HR4FRCV72`。換法：兩頁外層搜尋 `G-XXXXXXXXXX` 各改一處。只在 `fretboard.huanyinliu.com` 送出。事件由 `hy-shell.js` 的 `hyTrack` 送出。
 - 匯出圖片後的訂閱視窗下方加一行小字：「本網站使用 Google Analytics 統計匿名使用數據，用於改善工具。」
 - **這次要上傳**：`index.html`、`chord.html`、`sw.js`。`hy-shell.js` 也有更新，一併覆蓋（但頁面實際讀的是內嵌在 HTML 裡的那份）。
 - **注意**：資料夾裡其他 `.js` 檔目前都是內嵌在 HTML 裡的副本，只改這些檔案不會生效，一定要重新打包 `index.html`、`chord.html`。
