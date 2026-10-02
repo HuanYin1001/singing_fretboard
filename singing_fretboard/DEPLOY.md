@@ -60,15 +60,12 @@
 3. **重要**：如果同時改了 `sw.js` 以外的檔案而使用者拿到舊版，把 `sw.js` 裡的
    `const VERSION = 'sf-v1';` 改成 `'sf-v2'`（依序遞增）再 push，所有裝置就會重新下載。
 
-### 本次更新（v3.0.9，`sf-v51`，2026-10-03，由 Claude Code 修改）
+### 本次更新（v3.0.11，`sf-v53`，2026-10-03）
 
-這一版**沒有動 `index.html`、`chord.html` 和任何 .js 的程式**，只改設定與文件，所以 Design 端的編輯器內容不需要同步。詳細過程見 `code.md`。
-
-- `sw.js`：`VERSION` 由 `sf-v50` 改為 `sf-v51`，讓所有裝置重新下載。
-- `sitemap.xml`：兩個網址的 `lastmod` 由 2026-09-30 改為 2026-10-03。
-- `DEPLOY.md`：新增本段、下方「GA4 事件表」補充說明、新增 `code.md`。
-- GA4 檢查結論：`tour_complete` **有送出**，是在導覽元件（`pkgtour`，壓縮內嵌在 HTML 打包檔裡）的 `go()` 走到最後一步時送出，所以主程式碼裡搜尋不到。指板、和弦兩頁都有。
-- **這次要上傳**：`sw.js`、`sitemap.xml`、`DEPLOY.md`、`code.md`（其餘檔案和 v3.0.8 相同，不用重傳）。
+- 從現行編輯器（v3.0.11）重新打包 `index.html`、`chord.html`。包含 Claude Code 在 v3.0.10 加的 GA4 事件 `first_edit`（第一次真的編輯時送一次，導覽示範不算）；指板「快捷鍵」改名「快捷鍵列表」並貼在版權左邊。
+- GA4 事件表登記 `first_edit`；`tour_complete` 由導覽元件在走到最後一步時送出（兩頁都有）。
+- `sitemap.xml` 的 lastmod 改 2026-10-03。GA4、SEO、米色讀取畫面、Safari 縮放校正沿用。
+- **這次要上傳**：`index.html`、`chord.html`、`sw.js`、`hy-shell.js`、`sitemap.xml`、`DEPLOY.md`。
 
 ### 前次更新（v3.0.8，`sf-v50`，2026-10-02）
 
@@ -133,10 +130,10 @@
 | `open_project` | 成功開啟專案檔 | editor |
 | `new_project` | 執行開新專案 | editor |
 | `chord_lookup` | 查和弦按法且查得到 | editor、chord_name（最多 20 字） |
-| `first_edit` | 每次頁面載入第一次編輯（導覽示範不算），只送一次 | editor |
 | `tour_start` | 開始使用導覽 | editor |
-| `tour_complete` | 導覽走到最後一步並按「完成」（由導覽元件 `pkgtour` 內送出，不在主程式碼裡） | editor |
+| `tour_complete` | 導覽走到最後一步（寫在導覽元件的 `go()` 裡，不在主程式碼） | editor |
 | `subscribe_click` | 點擊左下「訂閱」按鈕 | editor |
+| `first_edit` | 一次載入中第一次真的編輯（導覽示範不算），只送一次 | editor |
 
 瀏覽量（`page_view`）由 GA4 自動記錄。
 
