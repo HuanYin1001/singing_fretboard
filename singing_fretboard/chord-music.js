@@ -300,13 +300,13 @@
   // 使用者逐一指定的按法（2026-09-28）：del＝拿掉、add＝加在最前面、only＝整組換掉。寫法 6 弦→1 弦，x＝不彈。結果帶 lib、special（自動規則測試跳過）。
   const FIX = {
     Eadd9: { del: ['0 2 2 1 0 2'], add: ['0 2 4 1 0 0'] },
-    Aadd9: { only: ['x 0 2 2 0 0', '5 7 7 6 0 0', 'x 0 7 9 10 7'] },
+    Aadd9: { only: ['x 0 2 2 0 0', '5 7 7 6 0 0', 'x 0 7 6 0 0'] },
     Fadd9: { del: ['1 0 3 0 1 1'], add: ['1 0 3 0 1 x'] },
     Fmaj9: { del: ['1 0 2 0 1 1'] },
     Fdim: { del: ['x x 3 1 0 1'], add: ['x x 3 1 0 x'] },
     Cmaj7: { only: ['x 3 2 0 0 0', 'x 3 5 4 5 3', '8 x 9 9 8 x', 'x x 10 12 12 12'] },
     Gm: { del: ['3 1 0 0 3 3'] },
-    Em7: { only: ['0 2 0 0 0 0', '0 2 2 0 3 0', '0 2 2 0 3 3', 'x 7 9 7 8 7', '12 14 12 12 12 12', '12 x 12 12 12 x'] },
+    Em7: { only: ['0 2 0 0 0 0', '0 2 2 0 3 0', '0 2 2 0 3 3', 'x 7 9 7 8 7'] },
     G: { only: ['3 2 0 0 0 3', '3 2 0 0 3 3', '3 5 5 4 3 3', 'x 10 12 12 12 10'] },
     Am: { only: ['x 0 2 2 1 0', '5 7 7 5 5 5'] },
     Bm: { only: ['x 2 4 4 3 2', '7 9 9 7 7 7'] },
@@ -315,7 +315,7 @@
     'G♯m': { only: ['4 2 1 1 4 x', '4 6 6 4 4 4', 'x 11 13 13 12 11'] },
     Amaj9: { add: ['x 0 2 1 0 0'] },
     Gadd9: { only: ['3 x 0 2 0 3', '3 x 0 2 3 x', 'x 10 12 12 10 10'] },
-    Fmaj13: { only: ['x x 3 2 3 0', '1 0 0 0 1 0', '1 x 0 2 1 0', '1 x 2 2 3 x', 'x 8 x 9 10 10', '13 12 12 12 13 12'] },
+    Fmaj13: { only: ['x x 3 2 3 0', '1 0 0 0 1 0', '1 x 0 2 1 0', '1 x 2 2 3 x', 'x 8 x 9 10 10'] },
     'E/G♯': { only: ['4 x 2 1 0 0', '4 x 2 4 0 0'] },
     'G/B': { only: ['x 2 0 0 3 x', 'x 2 0 0 3 3'] },
     'Am7/G': { only: ['3 x 2 0 1 0', '3 x 2 0 1 3'] },
@@ -326,9 +326,25 @@
   };
   // 開放和弦確認表（2026-10-01）：使用者逐一刪／加的開放按法，疊在 FIX 之後。
   const OPEN_FIX = {"E":{"del":["0 2 2 4 0 4","0 2 2 1 0 4"],"add":[]},"A♯":{"del":["x 1 0 3 3 1"],"add":[]},"B":{"del":["x 2 1 4 0 2"],"add":[]},"Cm":{"del":["x 3 1 0 1 3","x 3 1 0 4 3"],"add":["x 3 1 0 1 x","x 3 x 0 4 3"]},"C♯m":{"del":["x 4 2 1 2 0"],"add":[]},"Em":{"del":["0 2 2 4 0 3"],"add":[]},"Gm":{"del":["3 1 0 3 3 x"],"add":[]},"C♯7":{"del":["x 4 3 1 0 1","x 4 3 1 0 4"],"add":[]},"D♯7":{"del":["x x 1 0 2 3"],"add":[]},"F7":{"del":["1 0 1 2 4 x","1 0 3 2 4 x"],"add":[]},"F♯7":{"del":["2 4 2 3 2 0","2 4 4 3 2 0"],"add":[]},"G7":{"del":["3 2 3 0 3 x"],"add":[]},"A♯7":{"del":["x 1 0 1 3 1","x 1 0 1 3 4","x 1 0 3 3 4"],"add":[]},"C♯m7":{"del":["x 4 2 4 0 4","x 4 2 1 0 4"],"add":[]},"Gm7":{"del":["3 1 0 0 3 1","3 1 3 0 3 x"],"add":[]},"G♯m7":{"del":["4 2 4 1 0 x"],"add":[]},"Emaj7":{"del":["0 2 1 1 0 4"],"add":[]},"Gmaj7":{"del":["3 2 0 0 0 2","3 2 0 0 3 2","3 2 0 4 0 2"],"add":["3 x 0 0 0 2","3 x 0 4 3 2","3 x 4 0 0 x","3 x 4 0 3 x"]},"G♯maj7":{"del":["4 3 1 0 1 x","4 3 1 0 4 x"],"add":[]},"A♯maj7":{"del":["x 1 0 2 3 1"],"add":[]},"Bmaj7":{"del":["x 2 1 3 0 2"],"add":[]},"Cmaj7":{"del":[],"add":["x 3 5 5 0 0"]},"F♯sus4":{"del":["2 4 4 4 0 x"],"add":[]},"Csus4":{"del":[],"add":["x 3 3 0 1 x","x 3 3 0 1 1","x 3 3 0 1 3"]},"Gsus4":{"del":[],"add":["3 2 0 0 1 3"]},"Esus2":{"del":["0 2 4 4 0 0","0 2 2 4 0 2","0 2 4 4 0 2"],"add":[]},"Csus2":{"del":[],"add":["x 3 0 0 1 x"]},"Gsus2":{"del":[],"add":["3 x 0 2 3 3"]},"D♯add9":{"del":["x x 1 0 4 1"],"add":[]},"Eadd9":{"del":["0 2 4 4 0 4"],"add":[]},"E6":{"del":["0 2 2 4 2 4"],"add":[]},"F6":{"del":["1 3 0 2 1 x","1 3 0 2 3 x"],"add":[]},"A♯6":{"del":["x 1 0 0 3 1","x 1 3 0 3 1","x 1 3 0 3 3"],"add":[]},"B6":{"del":["x 2 1 1 0 2"],"add":[]},"C6":{"del":[],"add":["x 3 2 2 1 0"]},"Em6":{"del":["0 2 2 0 2 3","0 2 2 4 2 3"],"add":[]},"Fm6":{"del":["1 3 0 1 1 x","1 3 0 1 3 x"],"add":["1 x 0 1 1 x"]},"Gm6":{"del":["3 1 0 0 3 0","3 1 0 3 3 0","3 1 2 0 3 0"],"add":[]},"A♯m6":{"del":["x 1 3 0 2 1","x 1 3 0 2 3"],"add":[]},"Bm6":{"del":["x 2 0 1 0 2","x 2 0 1 3 2"],"add":[]},"Cm6":{"del":[],"add":["x 3 x 5 4 5"]},"D♯9":{"del":["x x 1 0 2 1"],"add":[]},"E9":{"del":["0 2 0 1 3 2","0 2 4 1 3 0"],"add":[]},"F9":{"del":["1 0 1 0 1 3","1 0 1 0 4 x"],"add":[]},"F♯9":{"del":["2 1 2 1 2 0","2 1 4 1 2 0"],"add":[]},"G9":{"del":["3 2 0 2 0 1","3 2 3 2 0 3"],"add":[]},"A♯9":{"del":["x 1 0 1 1 1","x 1 0 1 1 4","x 1 0 3 1 4"],"add":[]},"Em9":{"del":["0 2 2 0 3 2"],"add":[]},"Fm9":{"del":["x x 3 0 4 4","1 3 1 0 4 4"],"add":[]},"F♯m9":{"del":["2 0 2 1 2 0","2 0 4 1 2 0"],"add":[]},"G♯m9":{"del":["4 2 4 3 0 x"],"add":[]},"Am9":{"del":["x 0 2 4 1 3"],"add":["x 0 2 4 1 0","x 0 2 4 1 3"]},"Bm9":{"del":["x 2 0 2 2 2"],"add":["x 2 0 2 2 x"]},"Dm9":{"del":[],"add":["x x 0 2 1 0"]},"Gmaj9":{"del":["3 2 0 2 0 2","3 2 4 2 0 3"],"add":["3 2 4 2 0 x","3 x 4 2 0 x"]},"A♯maj9":{"del":["x 1 0 2 1 x"],"add":[]},"D7sus4":{"del":["x x 0 0 1 3"],"add":[]},"F♯7sus4":{"del":["2 4 2 4 2 0","2 4 2 4 0 0","2 4 4 4 0 0"],"add":[]},"A7sus4":{"del":["x 0 2 2 3 3"],"add":[]},"C♯dim":{"del":["x 4 2 0 2 3"],"add":[]},"Fdim":{"del":["1 2 3 1 0 4"],"add":[]},"F♯dim":{"del":["2 0 4 2 1 x"],"add":[]},"G♯dim":{"del":["4 2 0 4 0 4","4 2 0 1 0 4","4 2 0 4 3 x"],"add":[]},"A♯dim":{"del":["x 1 2 3 2 0"],"add":[]},"Bdim":{"del":["x 2 0 4 0 1","x 2 0 4 3 1"],"add":[]},"D♯aug":{"del":["x x 1 0 0 3","x x 1 4 0 3"],"add":[]},"Faug":{"del":["1 0 3 2 2 x"],"add":[]},"F♯aug":{"del":["2 1 0 3 3 x"],"add":[]},"Gaug":{"del":["3 2 1 0 4 x","3 2 1 4 0 x"],"add":[]},"Aaug":{"del":["x 0 3 2 2 1"],"add":["x 0 3 2 2 0"]},"A♯aug":{"del":["x 1 0 3 3 2"],"add":[]},"Baug":{"del":["x 2 1 0 0 3","x 2 1 0 4 3","x 2 1 4 0 3"],"add":[]},"C♯m7♭5":{"del":["x 4 2 0 0 3","x 4 2 4 0 3"],"add":[]},"Em7♭5":{"del":["0 1 0 0 3 0","0 1 0 0 3 3","0 1 2 0 3 0"],"add":[]},"Fm7♭5":{"del":["1 2 1 1 0 4","1 2 1 4 0 4"],"add":["1 2 1 1 0 x"]},"Gm7♭5":{"del":["3 1 3 0 2 x"],"add":[]},"G♯m7♭5":{"del":["4 2 0 4 0 2","4 2 0 1 0 2"],"add":[]},"Bm7♭5":{"del":["x 2 0 2 0 1"],"add":[]}};
+  // Power chord（2026-10-04）：只有根音＋5 度（＋八度），不套用「至少 4 弦」等規則。
+  // 順序：開放（E5、A5、D5）→ 根音在第 6 弦 → 根音在第 5 弦；每種先三弦（含八度）再兩弦。斜線不另外處理。
+  function powerShapes(r) {
+    const out = [], mk = fr => ({ frets: fr, barre: null, lib: false, power: true, special: true });
+    const OP = { 4: [[0, 2, 2, -1, -1, -1], [0, 2, -1, -1, -1, -1]], 9: [[-1, 0, 2, 2, -1, -1], [-1, 0, 2, -1, -1, -1]], 2: [[-1, -1, 0, 2, 3, -1], [-1, -1, 0, 2, -1, -1]] };
+    (OP[r] || []).forEach(fr => out.push(mk(fr)));
+    [0, 1].forEach(s => {
+      const f = (r - OPEN[s] + 12) % 12;
+      if (f < 1) return;
+      const a = [-1, -1, -1, -1, -1, -1], b = a.slice();
+      a[s] = b[s] = f; a[s + 1] = b[s + 1] = f + 2; a[s + 2] = f + 2;
+      out.push(mk(a), mk(b));
+    });
+    return out;
+  }
   function findShapes(raw, lib) {
     const sp = chordSpec(raw);
     if (!sp) return null;
+    if (sp.tpl.q === '5' && sp.bass === sp.root) return powerShapes(sp.root);
     const O = OPEN, pcOfIv = i => (sp.root + i.iv) % 12;
     const allow = new Set(sp.tpl.items.map(pcOfIv)); allow.add(sp.bass);
     const need = sp.tpl.items.filter(i => !i.opt).map(pcOfIv), opt = sp.tpl.items.filter(i => i.opt).map(pcOfIv);
@@ -392,11 +408,12 @@
     if (!slash && mv) {
       MOVE[sp.tpl.q].map(rel => {
         const lo = rel.findIndex(f => f >= 0);
-        let base = ((sp.root - O[lo] - rel[lo]) % 12 + 12) % 12;
-        if (base < 1) base = 12;
+        // 2026-10-04：base 0＝開放把位的形狀，不列高八度（第 12 格）版本。
+        const base = ((sp.root - O[lo] - rel[lo]) % 12 + 12) % 12;
+        if (base < 1) return null;
         const fr = rel.map(f => f < 0 ? -1 : base + f);
         return { base, frets: fr, barre: barreOf(fr), special: (MOVE_SP[sp.tpl.q] || []).includes(rel.join(',')) };
-      }).sort((a, b) => a.base - b.base).forEach(x => add(Math.max(...x.frets) <= 5 ? 1 : 2, { frets: x.frets, barre: x.barre, lib: false, move: true, special: x.special }));
+      }).filter(Boolean).sort((a, b) => a.base - b.base).forEach(x => add(Math.max(...x.frets) <= 5 ? 1 : 2, { frets: x.frets, barre: x.barre, lib: false, move: true, special: x.special }));
     } else if (!slash) {
       const q = sp.tpl.q, sh = [];
       [[SHAPE_E, 0], [SHAPE_A, 1]].forEach(([T, s]) => {
@@ -440,6 +457,21 @@
       if (it.fix || it.frets.filter(f => f > 0).length <= 4) return { ...it, barre: null };
       return null;
     }).filter(Boolean);
+    // 2026-10-04：大三和弦另外平移出完整的 C、G、D 指型（不含空弦），跟搜尋找到的同形狀一起排到最後（依格數），不受 8 個上限。
+    if (sp.tpl.q === '' && !slash) {
+      const SH = [[-1, 3, 2, 0, 1, 0], [3, 2, 0, 0, 0, 3], [-1, -1, 0, 2, 3, 2]];
+      const late = it => { const fr = it.frets; if (it.fix || fr.includes(0)) return false; const b = Math.min(...fr.filter(f => f > 0)); return SH.some(T => T.every((d, i) => d < 0 ? fr[i] < 0 : fr[i] === b + d)); };
+      const has = new Set(out.map(it => it.frets.join(',')));
+      SH.forEach(T => {
+        const s = T.findIndex(d => d >= 0);
+        const b = ((sp.root - O[s] - T[s]) % 12 + 12) % 12; if (b < 1) return;
+        const fr = T.map(d => d < 0 ? -1 : b + d);
+        if (!has.has(fr.join(','))) { has.add(fr.join(',')); out.push({ frets: fr, barre: barreOf(fr), lib: false, caged: true }); }
+      });
+      const lo = it => Math.min(...it.frets.filter(f => f > 0));
+      const head = out.filter(it => !late(it)).slice(0, LOOKUP_MAX);
+      return head.concat(out.filter(late).sort((a, b) => lo(a) - lo(b)));
+    }
     return out.slice(0, LOOKUP_MAX);
   }
 
