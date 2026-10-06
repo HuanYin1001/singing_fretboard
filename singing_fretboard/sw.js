@@ -1,6 +1,6 @@
 // Singing Fretboard — service worker（v3.1.0 靜態網站：每個檔案分開放，CORE 要列出全部）
 // 換版本號就會讓所有裝置重新下載新檔案
-const VERSION = 'sf-v58';
+const VERSION = 'sf-v59';
 const CORE = [
   './',
   './index.html',

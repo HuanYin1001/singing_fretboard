@@ -354,8 +354,12 @@ class Component extends DCLogic {
         [() => [{ t: 'tap', p: P(this.btn('檔案')), real: true, hold: 1000, after: () => this.setExtra([() => this.dlgOf('檔案 File')]) }],
          // 檔案視窗打開後停一下，游標在視窗裡往下、往上滑過幾個按鈕，再點「匯出圖片」。
          () => { const dl = this.dlgOf('檔案 File'); if (!dl) return []; const bs = Array.from(dl.querySelectorAll('button')).filter(x => x.getBoundingClientRect().width && !/^關閉/.test(x.title || '')), b = bs.find(x => (x.textContent || '').trim().startsWith('匯出圖片')); if (!b) return []; const lo = bs[bs.length - 1], mid = bs[Math.floor(bs.length / 2)];
-           return [lo && lo !== b && { t: 'move', p: P(lo), gap: 900, hold: 450 }, mid && mid !== b && mid !== lo && { t: 'move', p: P(mid), gap: 650, hold: 450 }, { t: 'tap', p: P(b), real: true, gap: 650, hold: 2600, after: () => this.setExtra([() => this.dlgOf('匯出圖片 Export')]) }].filter(Boolean); },
-         () => { const dl = this.dlgOf('匯出圖片 Export'), b = dl && dl.querySelector('button[title="關閉 Close"]'); return b ? [{ t: 'tap', p: P(b), real: true, hold: 400, after: () => this.setExtra(null) }] : []; }],
+           return [lo && lo !== b && { t: 'move', p: P(lo), gap: 900, hold: 450 }, mid && mid !== b && mid !== lo && { t: 'move', p: P(mid), gap: 650, hold: 450 }, { t: 'tap', p: P(b), real: true, gap: 650, hold: 300, after: () => this.setExtra([() => this.dlgOf('匯出圖片 Export')]) }].filter(Boolean); },
+         () => { const dl = this.dlgOf('匯出圖片 Export'), b = dl && dl.querySelector('button[title="關閉 Close"]'); if (!b) return [];
+           // 匯出圖片視窗打開後，游標在預覽圖上繞兩圈再去按關閉（不停在按鈕上，免得看起來像在點）。
+           const pv = Array.from(dl.querySelectorAll('img, canvas')).filter(e => e.getBoundingClientRect().width > 40).sort((x, y) => { const a = x.getBoundingClientRect(), c = y.getBoundingClientRect(); return c.width * c.height - a.width * a.height; })[0];
+           const pr = (pv || dl).getBoundingClientRect(), c = P(pv || dl), r = Math.max(24, Math.min(70, pr.width / 4, pr.height / 4));
+           return [{ t: 'circle', p: { x: c.x + r, y: c.y }, c, r, n: 2, gap: 500 }, { t: 'tap', p: P(b), real: true, gap: 500, hold: 400, after: () => this.setExtra(null) }]; }],
         () => [],
       ],
       ch: [
@@ -493,6 +497,10 @@ class Component extends DCLogic {
         evs.push({ t, run: () => { const w = this.win(); try { w.HY_TOUR.ctx(a.p.x, a.p.y); } catch (e) {} setTimeout(() => this.measure(), 60); } });
         add(a.p, 1, false, 1400);
       }
+      else if (a.t === 'circle') {
+        // 繞圈：從 p（圓的右邊）開始，繞 n 圈（每圈 24 點、約 1.5 秒），等速。
+        for (let k = 1; k <= 24 * (a.n || 2); k++) { const g = k / 24 * Math.PI * 2; seg[seg.length - 1].lin = true; add({ x: a.c.x + a.r * Math.cos(g), y: a.c.y + a.r * 0.75 * Math.sin(g) }, 1, false, (a.ms || 1500) / 24); }
+      }
       else if (a.t === 'move') {
         if (a.hold) add(a.p, 1, false, a.hold);
         if (el) evs.push({ t, el, m: 'leave' });
@@ -516,7 +524,7 @@ class Component extends DCLogic {
     evs.push({ t: t - 300, run: () => [this.boxRef.current, this.dotRef.current].forEach(el => { if (el && el.style.opacity !== '0') el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, fill: 'forwards' }); }) });
     }
     const total = t;
-    const anim = f.animate(seg.map(s => ({ offset: s.t / total, transform: tf(s.p), opacity: s.o, easing: E })), { duration: total, fill: 'forwards' });
+    const anim = f.animate(seg.map(s => ({ offset: s.t / total, transform: tf(s.p), opacity: s.o, easing: s.lin ? 'linear' : E })), { duration: total, fill: 'forwards' });
     // 按鈕效果、框選框、圓點跟著游標動畫的實際時間走。
     const q = evs.map(k => ({ t: k.t, run: k.run || (() => { this.fx(k.el, k.m); if (k.m === 'enter') this._fxEls.push(k.el); if (k.m === 'leave') this._fxEls = this._fxEls.filter(x => x !== k.el); }) }));
     q.sort((a, b) => a.t - b.t);

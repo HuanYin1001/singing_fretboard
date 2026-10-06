@@ -16,6 +16,9 @@
 <meta property="og:image:width" content="600">
 <meta property="og:image:height" content="600">
 <meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=Barlow+Condensed:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500;1,600;1,700&family=Noto+Sans+TC:wght@300..700&display=swap">
 <script>(function(){try{var s=document.createElement('style');s.id='hy-boot';s.textContent='html{background:#FAF6EF}body{visibility:hidden}';document.head.appendChild(s);setTimeout(function(){var e=document.getElementById('hy-boot');if(e)e.remove();},8000);}catch(e){}})();</script>
 <script>try { if (sessionStorage.getItem('hy-intro-seen') === '1') { const st = document.createElement('style'); st.textContent = '[data-hy-intro] > *{display:none!important}'; document.head.appendChild(st); } } catch (e) {}</script>
 <script src="./safari-zoom-fix.js"></script>
@@ -2373,10 +2376,17 @@ class Component extends DCLogic {
     }
     this._strWheel = (e) => { const t = e.target; if (t && t.closest && t.closest('[data-str-cell]') && !this.state.isPhoneMode) e.preventDefault(); };
     document.addEventListener('wheel', this._strWheel, { passive: false });
-    this._mountAt = Date.now(); requestAnimationFrame(() => { const hb = document.getElementById('hy-boot'); if (hb) hb.remove(); });
+    this._mountAt = Date.now();
+    // 字體到了才掀開畫面（最多等 2.5 秒），開場動畫從頭播，避免排版字體閃一下。
+    const fl = (s, t) => { try { return document.fonts.load(s, t); } catch (e) { return Promise.resolve(); } };
+    Promise.race([Promise.all([window.HY_FONTS_READY, fl('700 32px "Noto Sans TC"', '弦吟指板筆記'), fl('400 13px "Noto Sans TC"', '指板和弦主音音階調弦顏色')]).catch(() => {}), new Promise(r => setTimeout(r, 2500))]).then(() => requestAnimationFrame(() => {
+      const hb = document.getElementById('hy-boot'); if (hb) hb.remove();
+      const iv = document.querySelector('[data-hy-intro]');
+      if (iv && iv.getAnimations) iv.getAnimations({ subtree: true }).forEach(a => { try { a.currentTime = 0; } catch (e) {} });
+      if (this.state.intro) this._introT = setTimeout(() => this.setState({ intro: false }), 5000);
+    }));
     if (this.state.intro) {
       try { sessionStorage.setItem('hy-intro-seen', '1'); } catch (e) {}
-      this._introT = setTimeout(() => this.setState({ intro: false }), 5000);
     }
     const lg = new Image(); lg.src = 'assets/huanyin_logo.jpg';
     lg.onload = () => this.forceUpdate();
