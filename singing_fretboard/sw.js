@@ -1,11 +1,25 @@
-// Singing Fretboard — service worker
+// Singing Fretboard — service worker（v3.1.0 靜態網站：每個檔案分開放，CORE 要列出全部）
 // 換版本號就會讓所有裝置重新下載新檔案
-const VERSION = 'sf-v57';
+const VERSION = 'sf-v58';
 const CORE = [
   './',
   './index.html',
   './chord.html',
+  './tour.dc.html',
+  './support.js',
+  './vendor/react.production.min.js',
+  './vendor/react-dom.production.min.js',
+  './ds/styles.css',
+  './ds/_ds_bundle.js',
+  './ds/tokens/fonts.css',
+  './ds/tokens/colors.css',
+  './ds/tokens/typography.css',
+  './ds/tokens/spacing.css',
+  './ds/tokens/shape.css',
+  './ds/tokens/motion.css',
+  './ds/tokens/base.css',
   './manifest.webmanifest',
+  './safari-zoom-fix.js',
   './fretboard-music.js',
   './fretboard-storage.js',
   './project-link.js',
@@ -13,7 +27,6 @@ const CORE = [
   './chord-library.js',
   './tour-text.js',
   './hy-shell.js',
-  './safari-zoom-fix.js',
   './assets/tour-avatar.jpg',
   './assets/huanyin_logo.jpg',
   './assets/sfx/sub-ding.mp3',

@@ -1,0 +1,71 @@
+/* HuanYin 弦吟 — colour tokens.
+   Source: uploads/fingerboard analysis.pptx (「指板分析」教學課程投影片，20 頁) — this palette is
+   extracted directly from that deck's actual slide colours, not estimated or invented.
+   Cream/charcoal ground with a single warm amber accent family; no forest green, no indigo. */
+:root{
+  /* ── 中性色 neutrals — 米色/炭色 cream & charcoal from the deck's own slides ── */
+  --canvas:#FAF6EF;
+  --surface-bone:#F0E7D8;
+  --surface-card:#ffffff;
+  --ink:#2E2622;
+  --body:#3F3630;
+  --mute:#6B5B4E;
+  --stone:#C9B9A3;
+  --hairline:rgba(46,38,34,0.12);
+
+  /* ── 深色區塊 stage / night — derived darker steps of --ink for dark panels ── */
+  --surface-dark:#1C1611;
+  --surface-deep:#120E0A;
+  --on-dark:#FAF6EF;
+  --on-dark-mute:rgba(250,246,239,0.72);
+
+  /* ── 主色｜琥珀 amber — the deck's dominant accent (#D97706 / #B45309) ─────── */
+  --primary:#D97706;
+  --primary-deep:#B45309;
+
+  /* ── 副色｜靛藍 indigo — user-preferred cool tone reintroduced from the original palette;
+     NOT from the fingerboard deck (deck is warm-only) — kept because amber/rust/gold read as one
+     repetitive warm family for a three-role split, and the user asked to keep this cool anchor. */
+  --secondary:#26314F;
+  --secondary-deep:#1A2138;
+
+  /* ── 簽名色｜金褐 deep gold — a third warm step seen on tags/labels in the deck ── */
+  --accent:#C98A2A;
+  --accent-deep:#9C6B1D;
+
+  /* ── 额外可選｜松綠 forest · 赭紅 rust — also user-preferred, kept as optional extra tones
+     (not one of the three core roles) so both liked colours stay available. ── */
+  --forest:#1B4B3A;
+  --forest-deep:#123529;
+  --rust:#C2410C;
+  --rust-deep:#9A3412;
+
+  /* ── 語意色 semantic (Gumroad 交易頁 only) ─────── */
+  --success:#2c7a7b;
+  --success-tint:#e1e4d7;
+  --success-deep:#215b5c;
+  --danger:#C00000;
+  --danger-deep:#7F1D1D;
+
+  --link:#B45309;
+  --ring-focus:rgba(180,83,9,0.45);
+  --text-strong:var(--ink);
+  --text-body:var(--body);
+  --text-mute:var(--mute);
+  --text-faint:var(--stone);
+  --text-on-dark:var(--on-dark);
+  --text-on-dark-mute:var(--on-dark-mute);
+  --text-link:var(--link);
+  --text-accent:var(--accent-deep);
+
+  --bg-page:var(--canvas);
+  --bg-sunk:var(--surface-bone);
+  --bg-card:var(--surface-card);
+  --bg-stage:var(--surface-dark);
+  --bg-stage-deep:var(--surface-deep);
+  --bg-forest:var(--primary);
+
+  --border-hairline:var(--hairline);
+  --border-strong:rgba(46,38,34,0.28);
+  --border-on-dark:rgba(250,246,239,0.18);
+}

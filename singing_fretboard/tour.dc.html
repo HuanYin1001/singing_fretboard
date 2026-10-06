@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <script src="tour-text.js"></script>
+  
+</helmet>
+<div data-tour-root="1" ref="{{ rootRef }}" style="position: fixed; inset: 0; z-index: 2000; pointer-events: none; font-family: var(--font-ui); color: var(--ink); opacity: {{ rootOp }}; transition: opacity 600ms cubic-bezier(.2,.6,.2,1);">
+  <sc-if value="{{ touring }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 30; pointer-events: auto;"></div>
+    <svg style="position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 31; pointer-events: none; opacity: {{ spOp }};">
+      <defs>
+        <mask id="hyTourMask" maskUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%">
+          <rect x="0" y="0" width="100%" height="100%" fill="#fff"></rect>
+          <rect x="{{ sp.x }}" y="{{ sp.y }}" width="{{ sp.w }}" height="{{ sp.h }}" rx="4" fill="#000" style="transition: {{ spTr }};"></rect>
+          <sc-for list="{{ holes }}" as="h" hint-placeholder-count="0">
+            <rect x="{{ h.x }}" y="{{ h.y }}" width="{{ h.w }}" height="{{ h.h }}" rx="4" fill="#000"></rect>
+          </sc-for>
+        </mask>
+      </defs>
+      <rect x="0" y="0" width="100%" height="100%" fill="rgba(46,38,34,0.5)" mask="url(#hyTourMask)"></rect>
+    </svg>
+    <div ref="{{ boxRef }}" style="position: fixed; z-index: 33; left: 0; top: 0; width: 0; height: 0; box-sizing: border-box; border: 1.5px dashed var(--primary); background: rgba(217,119,6,0.08); opacity: 0; pointer-events: none;"></div>
+    <div ref="{{ dotRef }}" style="position: fixed; z-index: 33; left: 0; top: 0; width: 28px; height: 28px; box-sizing: border-box; border-radius: 50%; background: #F1E4CE; border: 1.5px solid #A08566; opacity: 0; pointer-events: none;"></div>
+    <div ref="{{ keyRef }}" style="position: fixed; z-index: 33; left: 0; top: 0; width: 96px; height: 34px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-family: var(--font-latin); font-size: 14px; font-weight: 600; letter-spacing: 0.04em; color: var(--ink); background: var(--surface-card); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); box-shadow: 0 3px 0 var(--border-strong); opacity: 0; pointer-events: none;">Space</div>
+    <div ref="{{ fingerRef }}" style="position: fixed; z-index: 34; left: 0; top: 0; width: 22px; height: 30px; opacity: 0; pointer-events: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.35));">
+      <svg width="22" height="30" viewBox="0 0 22 30"><path d="M1.5 1.5 L1.5 23.5 L7 18.3 L10.6 27 L14.2 25.5 L10.7 17 L18.2 17 Z" fill="#000000" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"></path></svg>
+    </div>
+    <div ref="{{ groupRef }}" style="position: fixed; z-index: 32; pointer-events: auto; left: {{ gp.x }}px; top: {{ gp.y }}px; width: 400px; max-width: calc(100vw - 24px); display: flex; align-items: flex-start; gap: 14px; opacity: {{ gpOp }}; transition: {{ gpTr }};">
+      <div style="flex: none; display: flex; flex-direction: column; align-items: center; gap: 5px;">
+        <img src="assets/tour-avatar.jpg" alt="桓吟" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid var(--surface-card); box-shadow: var(--shadow-md);">
+        <span style="padding: 1px 8px; font-family: var(--font-cjk); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; color: var(--ink); background: var(--surface-card); border: 1px solid var(--hairline); border-radius: 999px;">桓吟</span>
+      </div>
+      <div style="position: relative; flex: 1; min-width: 0; box-sizing: border-box; padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 10px; background: var(--surface-card); border: 1px solid var(--hairline); border-radius: 14px; box-shadow: var(--shadow-lg);">
+        <span style="position: absolute; left: -7px; top: 24px; width: 12px; height: 12px; background: var(--surface-card); border-left: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); transform: rotate(45deg);"></span>
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+          <span style="flex: 1; min-width: 0; display: block; font-family: var(--font-cjk); font-size: 15px; font-weight: 700; line-height: 1.5; text-wrap: pretty; letter-spacing: var(--tracking-cjk-title);">{{ cur.title }}</span>
+          <span style="flex: none; font-family: var(--font-latin); font-size: 12px; font-weight: 600; color: var(--mute); font-variant-numeric: tabular-nums;">{{ stepLabel }}</span>
+        </div>
+        <span style="font-family: var(--font-cjk); font-size: 13px; line-height: 1.9; text-wrap: pretty; white-space: pre-line;">{{ cur.body }}</span>
+        <div style="display: flex; gap: 4px;">
+          <sc-for list="{{ pips }}" as="p" hint-placeholder-count="6">
+            <span style="flex: 1; height: 3px; border-radius: 2px; background: {{ p.c }};"></span>
+          </sc-for>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+          <button type="button" onClick="{{ onSkip }}" style="padding: 6px 2px; font-family: var(--font-cjk); font-size: 13px; color: var(--mute); background: transparent; border: none; cursor: pointer;">略過</button>
+          <div style="display: flex; gap: 6px;">
+            <sc-if value="{{ notFirst }}" hint-placeholder-val="{{ false }}">
+              <button type="button" onClick="{{ onPrev }}" style="padding: 7px 14px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; color: var(--ink); background: var(--surface-bone); border: 1px solid var(--hairline); border-radius: var(--radius-sm); cursor: pointer;">上一步</button>
+            </sc-if>
+            <button type="button" onClick="{{ onNext }}" style="padding: 7px 16px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; font-weight: 600; color: #FBEFD9; background: var(--ink); border: 1px solid var(--ink); border-radius: var(--radius-sm); cursor: pointer;">{{ nextLabel }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+// v2.3.1：直接在目前的編輯器上導覽。開始時編輯器先記住使用者的畫面、暫停存檔，結束時原封不動換回來。
+// 找目標區塊：label(開頭文字) → 它所在的整個區塊；sel → CSS 選擇器；union → 多個元素合起來的範圍
+const TUN_POP_H = 205; // 調弦小視窗打開前先預估的高度（亮框不會先小後大）
+const TOURS = {
+  fb: [
+    { title: '先選主音和音階', label: '主音', lv: 0, body: '我通常會先選主音和音階，指板就會自動排好音名和級數。之後想換調，已經畫好的圓點也會留著。' },
+    { title: '加圓點、整組上色', label: '顏色', lv: 1, gpAt: '[data-ab]', body: '選一個顏色，再點指板就能加圓點。下面那排級數按鈕我很常用，可以把同一個級數整組換成同一個顏色。' },
+    // v2.4.5 調弦收到指板右上角的按鈕：先亮按鈕＋它會彈出的小視窗位置；舊版沒有這個按鈕時照舊找「調弦」區塊。
+    { title: '調弦', tun: true, label: '調弦', lv: 1, body: '如果不是標準調弦，就在這裡一條一條調空弦音。換調弦的時候，圓點不會跑掉。' },
+    { title: '框選局部編輯', board: true, lv: 3, lock: true, body: '在指板上拖曳，框選 3～5 格，按右鍵選「儲存成和弦圖」，就會直接跳到和弦編輯器。' },
+    { title: '快速切換 A／B', union: '[data-ab]', lv: 2, abKey: true, lock: true, body: '想比較兩組音階的時候，我會分別存進 A 和 B，點一下就能來回切換。' },
+    { title: '存檔和匯出', buttons: ['檔案'], lv: 1, swap: true, lock: true, body: '最後記得存檔，專案檔會把指板和和弦本一起存起來。要分享就按「匯出圖片」，左邊可以先看預覽。' },
+    { title: '', center: true, body: '完成導覽了，學會了嗎？製作專屬於自己的吉他練習筆記吧！' },
+  ],
+  ch: [
+    { title: '整頁設定', label: '整頁設定', body: '這裡的設定會套用到整頁的和弦圖，像是左手指法、圓點樣式。個別和弦也可以另外改。' },
+    { title: '查和弦按法', label: '查和弦按法', side: 'right', newCard: true, body: '輸入和弦名稱，就會列出幾種常用按法。用左右箭頭換一個，按「加入」就會放進和弦本。' },
+    { title: '新增和弦', sel: '[data-add-chord]', body: '按這裡加一張空白和弦圖。名稱沒填的話，app 會自動辨識是什麼和弦。' },
+    { title: '編輯和弦圖', sel: '[data-card]', last: true, avoidPop: true, lock: true, body: '先點一下選取和弦，再點格子放圓點。在同一格上下拖曳可以畫封閉，圓點按右鍵可以設定指法。' },
+    // 跟上一步同一張和弦圖（最後一張）、同一個編輯視窗；對話框留在上一步的位置，畫面不跳。
+    { title: '編輯和弦視窗', pop: true, prep: -1, redoDot: true, lock: true, keepGp: true, body: '' },
+    { title: '排順序、一次選好幾張', sel: '[data-sheet]', withPop: true, lock: true, body: '拖曳和弦圖可以換順序。在空白處拖曳，可以一次框選好幾張一起處理。' },
+    { title: '存檔和匯出', buttons: ['檔案'], swap: true, lock: true, body: '和弦跟指板存在同一個專案檔。匯出時可以選一排放幾個、要不要印出註解，PDF 會自動分頁。' },
+    { title: '', center: true, body: '' },
+  ],
+};
+class Component extends DCLogic {
+  state = { app: this.props.app === 'ch' ? 'ch' : 'fb', step: -1, sp: null, gp: null };
+  groupRef = React.createRef();
+  fingerRef = React.createRef();
+  boxRef = React.createRef();
+  dotRef = React.createRef();
+  keyRef = React.createRef();
+  rootRef = React.createRef();
+  // 文字從「導覽文字 Tour Text.dc.html」讀取，改那一頁就好；讀不到時用下面預設的文字。
+  loadText() {
+    if (!window.HYTOUR_get) { if ((this._lt = (this._lt || 0) + 1) < 50) setTimeout(() => this.loadText(), 100); return; }
+    const t = window.HYTOUR_get();
+    ['fb', 'ch'].forEach(app => TOURS[app].forEach((s, i) => { if (t[app][i]) { s.title = t[app][i].title; s.body = t[app][i].body; } }));
+    this.forceUpdate();
+  }
+  componentDidMount() {
+    this._mountT = Date.now();
+    if (this.props.on) this.begin();
+    this.loadText();
+    this._k = (e) => {
+      if (!this.props.on) return;
+      // 導覽開著的時候，外面那層編輯器不接收按鍵（避免空白鍵切到真正的 A／B）。
+      e.stopImmediatePropagation();
+      if (this.state.step < 0) { if (e.key === 'Escape') this.stop(); return; }
+      if (e.key === 'Escape') this.stop();
+      else if (e.key === 'ArrowRight') this.go(1);
+      else if (e.key === 'ArrowLeft') this.go(-1);
+    };
+    // 視窗改大小時，編輯器會晚一點才重新縮放和弦紙／指板，所以當下量一次之後，等它調整完再補量幾次。
+    this._rz = () => {
+      const m = () => { try { this.measure(); } catch (e) {} };
+      m(); (this._rzT || []).forEach(clearTimeout);
+      requestAnimationFrame(() => requestAnimationFrame(m));
+      this._rzT = [120, 350, 650].map(t => setTimeout(m, t));
+    };
+    window.addEventListener('keydown', this._k, true);
+    window.addEventListener('resize', this._rz);
+  }
+  // 編輯器一打開就先把導覽元件載好（平常什麼都不做），按下「使用導覽」時 on 變成 true 才開始。
+  componentDidUpdate(prev) { if (!prev.on && this.props.on) this.begin(); }
+  componentWillUnmount() {
+    this.leave(); this.stopFinger(); window.removeEventListener('keydown', this._k, true); window.removeEventListener('resize', this._rz); (this._rzT || []).forEach(clearTimeout);
+  }
+  doc() { return document; }
+  win() { return window; }
+  // 找編輯器上的元素（不算導覽自己的對話框）。
+  all(sel) { return Array.from(document.querySelectorAll(sel)).filter(e => !e.closest('[data-tour-root]')); }
+  // 點下去的位置底下是哪個元素（先把導覽這層藏起來再找）。
+  hit(p) { const r = this.rootRef.current, v = r ? r.style.visibility : ''; if (r) r.style.visibility = 'hidden'; const el = document.elementFromPoint(p.x, p.y); if (r) r.style.visibility = v; return el; }
+  begin() {
+    this._left = false; this._entered = false; this._mountT = Date.now();
+    try { window.HY_TOUR && window.HY_TOUR.enter(); } catch (e) {}
+    this._scr = () => this.measure(); window.addEventListener('scroll', this._scr, true);
+    // 盯著和弦紙／指板的大小：一縮放就重新對齊亮框、對話框。
+    try { if (window.ResizeObserver) { this._tro = new ResizeObserver(() => { try { this.measure(); } catch (e) {} }); ['[data-sheet]', '#hy-board-box'].forEach(q => { const e = document.querySelector(q); if (e) this._tro.observe(e); }); } } catch (e) {}
+    const t0 = Date.now();
+    const go = () => { if (this._left) return; let ok = false; try { ok = !!window.HY_TOUR && this.findEl(TOURS[this.state.app][0]).length > 0; } catch (e) {} if (ok || Date.now() - t0 > 3000) { this.setState({ ready: true }); this.show(0); } else setTimeout(go, 50); };
+    go();
+  }
+  leave() { if (this._left) return; this._left = true; window.removeEventListener('scroll', this._scr, true); if (this._tro) { this._tro.disconnect(); this._tro = null; } try { window.HY_TOUR && window.HY_TOUR.exit(); } catch (e) {} }
+  popEl() { const d = this.doc(), w = this.win(); if (!d) return null; const t = Array.from(this.all('span')).find(e => (e.textContent || '').trim().startsWith('編輯和弦') && e.getBoundingClientRect().width); let e = t; while (e && e !== d.body && w.getComputedStyle(e).position !== 'fixed') e = e.parentElement; return e && e !== d.body ? e : null; }
+  findEl(s, full) {
+    const d = this.doc(); if (!d) return [];
+    if (s.pop) { const e = this.popEl(); const cs = Array.from(this.all('[data-card]')); const c0 = cs.slice(s.prep === -1 ? -1 : 0).slice(0, 1); return e ? [e].concat(c0) : c0; }
+    if (s.sel) { const all = Array.from(this.all(s.sel)); const e = s.last ? all[all.length - 1] : all[0]; if (!e) return []; if (s.withPop) { const pe = this.popEl(); if (pe) return [e, pe]; } return [e]; }
+    if (s.tun) {
+      const tag = this.all('button[title="調弦 Tuning"]').find(e => e.getBoundingClientRect().width);
+      if (tag) {
+        const w = this.win(), pop = this.all('[data-keep-str]').find(e => e.getBoundingClientRect().width && w.getComputedStyle(e).position === 'fixed');
+        // 小視窗打開後還會移動／縮放一下：位置還在變就再量一次，直到停下來，亮區才不會跟視窗錯開。
+        const pb = pop && w.HY_TOUR && w.HY_TOUR.tunPopBox && w.HY_TOUR.tunPopBox();
+        if (pop && pb) { const pop2 = { getBoundingClientRect: () => { const q = pop.getBoundingClientRect(), h = q.width ? q.height * pb.width / q.width : TUN_POP_H * pb.width / 372; return { left: pb.left, top: pb.top, right: pb.left + pb.width, bottom: pb.top + h, width: pb.width, height: h }; } }; return [tag, pop2]; }
+        if (pop) { const q = pop.getBoundingClientRect(), k = [q.left, q.top, q.width, q.height].map(Math.round).join(); if (k !== this._tunK) { this._tunK = k; clearTimeout(this._tunT); this._tunT = setTimeout(() => { try { this.measure(); } catch (e) {} }, 150); } return [tag, pop]; }
+        this._tunK = null;
+        if (!full) return [tag];
+        const r = tag.getBoundingClientRect(), hz = w.HY_TOUR && w.HY_TOUR.popZoom, z = (hz && hz()) || r.height / 28 || 1, W = 372 * z, H = TUN_POP_H * z, L = Math.max(8, r.right - W), T = r.bottom + 8;
+        return [tag, { getBoundingClientRect: () => ({ left: L, top: T, right: L + W, bottom: T + H, width: W, height: H }) }];
+      }
+    }
+    if (s.union) return Array.from(this.all(s.union)).filter(e => e.getBoundingClientRect().width);
+    if (s.buttons) return s.buttons.map(t => Array.from(this.all('button')).find(b => b.getBoundingClientRect().width && (b.textContent || '').trim().startsWith(t))).filter(Boolean);
+    if (s.label) {
+      const lab = Array.from(this.all('span')).find(e => e.getBoundingClientRect().width && (e.textContent || '').trim().replace(/^\d+\s*/, '').startsWith(s.label) && e.textContent.length < 40);
+      const out = lab && lab.parentElement ? [lab.parentElement] : [];
+      if (full && s.growBoard) { const b = d.getElementById('hy-board-box'); if (b) out.push(b); }
+      return out;
+    }
+    if (s.board) { const e = d.getElementById('hy-board-box'); if (!e) return []; const m = d.querySelector('[data-chord-menu]'); const w = this.win(), c = w.HY_TOUR && w.HY_TOUR.cellPt && w.HY_TOUR.cellPt(5, 8); const br = e.getBoundingClientRect(), px = c ? c.x : br.left + br.width * 0.42, py = c ? c.y : br.top + br.height * 0.78; const est = { getBoundingClientRect: () => ({ left: px, top: br.bottom + 8, right: px + 224, bottom: br.bottom + 136, width: 224, height: 128 }) }; return [e, est, m].filter(Boolean); }
+    return [];
+  }
+  rectOf(els) {
+    const rs = els.map(e => e.getBoundingClientRect()).filter(r => r.width);
+    if (!rs.length) return null;
+    const l = Math.min(...rs.map(r => r.left)), t = Math.min(...rs.map(r => r.top)), R = Math.max(...rs.map(r => r.right)), B = Math.max(...rs.map(r => r.bottom));
+    return { l, t, r: R, b: B };
+  }
+  bringIntoView(els) {
+    const r = this.rectOf(els), w = this.win(); if (!r || !w) return;
+    const vh = w.innerHeight;
+    if (r.t < 60 || (r.b > vh - 40 && r.b - r.t < vh - 100)) {
+      let el = els[0].parentElement;
+      while (el && el !== this.doc().body) { const cs = w.getComputedStyle(el); if (/(auto|scroll)/.test(cs.overflowY) && el.scrollHeight > el.clientHeight) break; el = el.parentElement; }
+      const dy = r.t - Math.max(80, (vh - (r.b - r.t)) / 3);
+      if (el && el !== this.doc().body) el.scrollTop += dy; else w.scrollBy(0, dy);
+    }
+  }
+  keyPt() { const r = this.rectOf(this.qa('[data-ab]')); return r ? { x: (r.l + r.r) / 2, y: r.b + 30 } : null; }
+  showKey(p) { const k = this.keyRef.current; if (!k) return; k.style.left = (p.x - 48) + 'px'; k.style.top = (p.y - 17) + 'px'; k.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 220, easing: 'cubic-bezier(.2,.6,.2,1)', fill: 'forwards' }); }
+  // 點擊感：游標按下縮一下＋點擊處擴散一圈淡琥珀色圓環。
+  clickFx(p) { const f = this.fingerRef.current; if (!f || !p) return; const sv = f.firstElementChild; if (sv && sv.animate) { sv.style.transformOrigin = '2px 2px'; sv.animate([{ transform: 'scale(1)' }, { transform: 'scale(0.82)', offset: 0.35 }, { transform: 'scale(1)' }], { duration: 260, easing: 'cubic-bezier(.2,.6,.2,1)' }); }
+    const r = document.createElement('div'); r.style.cssText = 'position: fixed; z-index: 33; pointer-events: none; left: ' + (p.x - 14) + 'px; top: ' + (p.y - 14) + 'px; width: 28px; height: 28px; box-sizing: border-box; border-radius: 50%; border: 2px solid rgba(217,119,6,0.75); background: rgba(217,119,6,0.16);';
+    f.parentElement.appendChild(r); const a = r.animate([{ transform: 'scale(0.3)', opacity: 0.9 }, { transform: 'scale(1.5)', opacity: 0 }], { duration: 460, easing: 'cubic-bezier(.2,.6,.2,1)', fill: 'forwards' }); a.onfinish = () => r.remove(); setTimeout(() => r.remove(), 900); }
+  pressKey() { const k = this.keyRef.current; if (!k) return; k.animate([{ transform: 'translateY(0)', boxShadow: '0 3px 0 var(--border-strong)', background: 'var(--surface-card)' }, { transform: 'translateY(3px)', boxShadow: '0 0 0 var(--border-strong)', background: 'var(--surface-bone)', offset: 0.3 }, { transform: 'translateY(0)', boxShadow: '0 3px 0 var(--border-strong)', background: 'var(--surface-card)' }], { duration: 320, easing: 'cubic-bezier(.2,.6,.2,1)' }); }
+  measure() {
+    const st = this.state, d = this.doc(); if (st.step < 0) return;
+    const s = TOURS[st.app][st.step], xs = this.extraEls(), els = (s.swap || s.newCard) && xs.length ? [] : this.findEl(s); let r = this.rectOf(els);
+    // 示範中另外亮起的小區域（點到的那格、整個指板、第 5 弦、打開的視窗），每塊單獨挖一個洞。swap：打開視窗後只亮視窗，不再亮原本的按鈕。
+    const holes = xs.map(e => e.getBoundingClientRect()).map(q => ({ x: q.left - 6, y: q.top - 6, w: q.width + 12, h: q.height + 12 }));
+    if (JSON.stringify(holes) !== JSON.stringify(st.holes || [])) this.setState({ holes });
+    let spHide = null;
+    if (!r && holes.length) { const h0 = holes[0]; spHide = { x: h0.x + h0.w / 2, y: h0.y + h0.h / 2, w: 0, h: 0 }; r = { l: h0.x + 6, t: h0.y + 6, r: h0.x + h0.w - 6, b: h0.y + h0.h - 6 }; }
+    const vw = window.innerWidth, vh = window.innerHeight, pad = 6;
+    if (!r && (s.pop || s.withPop) && this._popSp) return;
+    if (!r) { this.setState({ sp: { x: vw / 2, y: vh / 2, w: 0, h: 0 }, gp: { x: Math.max(12, vw / 2 - 200), y: vh / 2 - 90 } }); return; }
+    let sp = { x: r.l - pad, y: r.t - pad, w: r.r - r.l + pad * 2, h: r.b - r.t + pad * 2 };
+    if (s.pop) this._popSp = sp; else this._popSp = null;
+    const G = Math.min(400, vw - 24), H = (this.groupRef.current && this.groupRef.current.offsetHeight) || 190, m = 16;
+    const cx = v => Math.max(12, Math.min(v, vw - G - 12)), cy = v => Math.max(12, Math.min(v, vh - H - 12));
+    let gp;
+    // 調弦那步：亮框先只框按鈕，點開後才延伸；對話框一開始就照「按鈕＋小視窗」的範圍擺，不會跟著跳。
+    // 對話框位置照「這一步最後會亮起的範圍」算（調弦：按鈕＋小視窗；顏色：顏色區＋指板），亮框變大變小時對話框不跳。示範中點開的視窗（_extra）只擴大亮框。
+    const spG = s.growBoard ? (() => { const q = this.rectOf(this.findEl(s, true)); return q ? { x: q.l - pad, y: q.t - pad, w: q.r - q.l + pad * 2, h: q.b - q.t + pad * 2 } : sp; })() : sp;
+    { // 挑擋到重點區塊最少、又離它最近的位置（編輯視窗那步：和弦圖最不能擋）。
+      const sp = spG;
+      const tunOpen = s.tun && els.length > 1;
+      const prot = s.pop && els.length > 1
+        ? els.map((e, i) => { const q = e.getBoundingClientRect(); return { x: q.left - pad, y: q.top - pad, w: q.width + pad * 2, h: q.height + pad * 2, k: i === 1 ? 4 : 2 }; })
+        : [{ ...sp, k: 1 }];
+      // 調弦小視窗打開後：對話框滑到小視窗左邊，並避開亮起來的第 5 弦。
+      if (tunOpen) (st.holes || []).forEach(h => prot.push({ ...h, k: 8 }));
+      // 音階選單打開時：對話框避開整個選單。
+      if (this._avoidHoles) holes.forEach(h => prot.push({ ...h, k: 6 }));
+      // A／B：對話框一開始就避開指板和下方的 Space 鍵帽。
+      if (s.abKey) { const b = d.getElementById('hy-board-box'), q = b && b.getBoundingClientRect(); if (q && q.width) prot.push({ x: q.left - pad, y: q.top - pad, w: q.width + pad * 2, h: q.height + pad * 2, k: 4 }); const kp = this.keyPt(); if (kp) prot.push({ x: kp.x - 60, y: kp.y - 24, w: 120, h: 48, k: 6 }); }
+      // 存檔：對話框避開打開的視窗；視窗還沒打開時先避開檔案視窗會出現的位置（畫面正中央）。
+      // 一開始就同時避開「檔案」視窗和「匯出圖片」視窗會出現的位置（畫面正中央），再用 lock 固定，點檔案前後對話框不移動。
+      if (s.swap) { if (holes.length) holes.forEach(h => prot.push({ ...h, k: 4 })); else { const fw = Math.min(420, vw - 48), fh = Math.min(480, vh - 48); prot.push({ x: (vw - fw) / 2 - pad, y: (vh - fh) / 2 - pad, w: fw + pad * 2, h: fh + pad * 2, k: 4 }); } }
+      // 示範中跳出的編輯視窗也要避開，對話框不被蓋住、也不蓋住它。
+      // 示範會點的指板位置也要避開，對話框不擋住游標動畫。
+      if (s.avoidCell) { const w = this.win(), c = w && w.HY_TOUR && w.HY_TOUR.cellPt && w.HY_TOUR.cellPt(s.avoidCell[0], s.avoidCell[1]); if (c) prot.push({ x: c.x - 60, y: c.y - 60, w: 120, h: 120, k: 6 }); }
+      if (s.avoidPop) { const pe = this.popEl(), q = pe && pe.getBoundingClientRect(); if (q && q.width) { this._popWH = { w: q.width, h: q.height }; prot.push({ x: q.left - pad, y: q.top - pad, w: q.width + pad * 2, h: q.height + pad * 2, k: 4 }); }
+        else if (els[0]) { // 編輯視窗還沒打開：照編輯器的規則（放在和弦靠頁面中間那邊）先預估它的位置，對話框一開始就避開。
+          const c = els[0].getBoundingClientRect(), k = c.width / 258 || 1, wh = this._popWH || { w: 330 * k, h: 400 * k }, pg = (els[0].parentElement || document.body).getBoundingClientRect();
+          // 跟編輯器同規則：第 3 排以後、右邊緊鄰「新增和弦」的和弦，視窗放左邊。
+          const ad = this.all('[data-add-chord]')[0], ar = ad && ad.getBoundingClientRect(), row = Array.from(new Set(this.all('[data-card]').map(e => Math.round(e.getBoundingClientRect().top)))).filter(t => t < c.top - 4).length, addR = !!(ar && ar.width && Math.abs(ar.top - c.top) < 8 && ar.left >= c.right - 2 && ar.left - c.right < 80);
+          const toR = !(row >= 2 && addR && c.left - 10 - wh.w >= 12) && (c.left + c.right) / 2 < (pg.left + pg.right) / 2, px = toR && c.right + 10 + wh.w <= vw - 12 ? c.right + 10 : c.left - 10 - wh.w, py = Math.max(12, Math.min(c.top + c.height / 2, vh - 12 - wh.h));
+          prot.push({ x: px - pad, y: py - pad, w: wh.w + pad * 2, h: wh.h + pad * 2, k: 4 });
+        } }
+      const cands = [
+        { x: sp.x + sp.w + m, y: cy(sp.y) }, { x: sp.x - m - G, y: cy(sp.y) },
+        { x: cx(sp.x), y: sp.y + sp.h + m }, { x: cx(sp.x), y: sp.y - m - H },
+      ];
+      for (let yy = 12; yy <= vh - H - 12; yy += 32) for (let xx = 12; xx <= vw - G - 12; xx += 32) cands.push({ x: xx, y: yy });
+      const C = cands.map(c => ({ x: cx(c.x), y: cy(c.y) }));
+      const ov = (c, p) => Math.max(0, Math.min(c.x + G, p.x + p.w) - Math.max(c.x, p.x)) * Math.max(0, Math.min(c.y + H, p.y + p.h) - Math.max(c.y, p.y));
+      const score = c => prot.reduce((a, p) => a + ov(c, p) * p.k, 0);
+      const dist = c => Math.hypot(c.x + G / 2 - (sp.x + sp.w / 2), c.y + H / 2 - (sp.y + sp.h / 2));
+      const C2 = s.pop && els.length > 1 ? C.filter(c => c.x + G <= els[0].getBoundingClientRect().left - 8) : tunOpen ? C.filter(c => c.x + G <= sp.x - 4) : C;
+      if (s.tun && !tunOpen) gp = { x: cx(sp.x + sp.w - G), y: cy(sp.y + sp.h + m) };
+      else
+      gp = s.gpAt ? (() => { const q = this.rectOf(this.qa(s.gpAt)); return q ? { x: cx(q.l), y: cy(q.t) } : { x: cx(sp.x + sp.w + m), y: cy(sp.y) }; })()
+        : s.board ? { x: cx(sp.x + sp.w / 2 - G / 2), y: cy(sp.y + sp.h + m) }
+        : s.side === 'right' ? { x: cx(sp.x + sp.w + m), y: cy(sp.y) }
+        : s.side === 'belowLeft' ? { x: cx(sp.x + sp.w - G - 120), y: cy(sp.y + sp.h + 28) }
+        : (C2.length ? C2 : C).reduce((b, c) => { const sc = score(c), sb = score(b); return sc < sb - 1 || (Math.abs(sc - sb) <= 1 && dist(c) < dist(b)) ? c : b; }, (C2.length ? C2 : C)[0]);
+    }
+    const same = (a, b) => !!(a && b) && Object.keys(a).every(k => Math.abs(a[k] - b[k]) < 0.5);
+    if (s.keepGp && this._prevGp && this._prevGp.x > -999) gp = this._prevGp;
+    if (s.lock && st.gp && st.gp.x > -999 && Date.now() - (this._stepT || 0) > 800) gp = st.gp;
+    // 存檔：視窗打開後，對話框移到視窗左邊，不擋住視窗。
+    if (s.swap && holes.length) { const hl = Math.min(...holes.map(h => h.x)); if (gp.x + G > hl - 12) gp = { x: Math.max(12, hl - 16 - G), y: gp.y }; }
+    // 查和弦按法：按「加入」後亮區移到新和弦，對話框水平位置不動，往上移開不擋住新和弦（上面放不下就放下面）。
+    if (s.newCard && holes.length) { const h = holes[0]; if (!this._lkGp) this._lkGp = st.gp && st.gp.x > -999 ? st.gp : gp; const b = this._lkGp; gp = { x: b.x, y: b.y };
+      if (gp.x < h.x + h.w && gp.x + G > h.x && gp.y < h.y + h.h && gp.y + H > h.y) gp.y = h.y - m - H >= 12 ? h.y - m - H : cy(h.y + h.h + m); }
+    if (spHide) sp = spHide;
+    // 第一次出現：頭像和對話框從左邊滑進來，速度跟按鈕滑出去一樣。
+    if (!this._entered) { this._entered = true; this._entering = true; this.setState({ sp, gp: { x: -440, y: gp.y } }); setTimeout(() => { this._entering = false; this.forceUpdate(); }, 700); return; }
+    if (!same(sp, st.sp) || !same(gp, st.gp)) this.setState({ sp, gp });
+  }
+  show(step) {
+    this._stepT = Date.now();
+    this._prevGp = this.state.step >= 0 ? this.state.gp : null;
+    this.setState({ step }, () => {
+      this.prepStep();
+      const m = () => { try { this.measure(); } catch (e) {} };
+      try { const s = TOURS[this.state.app][step], els = this.findEl(s); if (els.length) this.bringIntoView(els); } catch (e) {}
+      m(); requestAnimationFrame(() => requestAnimationFrame(m));
+      [120, 400, 700].forEach(t => setTimeout(m, t));
+      this.stopFinger(); const tok = this._fTok; setTimeout(() => { if (tok === this._fTok) this.runFinger(); }, 800);
+    });
+  }
+  // ── 手指示範動畫：只是動畫，不會真的點下去 ──
+  pt(el, fx, fy) { if (!el) return null; const r = el.getBoundingClientRect(); if (!r.width) return null; return { x: r.left + r.width * (fx == null ? 0.5 : fx), y: r.top + r.height * (fy == null ? 0.5 : fy), el: fx == null ? el : null }; }
+  // 讓被「滑到」的按鈕顯示滑過／按下的樣子（只改外觀，不觸發點擊）。
+  fx(el, mode) {
+    if (!el) return;
+    const w = this.win();
+    if (mode === 'enter' || mode === 'leave') {
+      try { const ev = mode === 'enter' ? ['pointerover', 'mouseover'] : ['pointerout', 'mouseout']; ev.forEach(n => el.dispatchEvent(new w.MouseEvent(n, { bubbles: true }))); } catch (e) {}
+    }
+    // 跟 app 本身的滑過／按下樣式一樣：按鈕長出淡琥珀底、色塊變暗一點、選單邊框變琥珀、按下往下 1px。
+    if (el._tourOrig == null) el._tourOrig = { bs: el.style.boxShadow, f: el.style.filter, bc: el.style.borderColor, t: el.style.transform };
+    const o = el._tourOrig, tag = el.tagName, sw = el.hasAttribute('data-swatch');
+    const hover = () => {
+      if (tag === 'SELECT' || tag === 'INPUT') el.style.borderColor = 'var(--primary)';
+      else if (sw) el.style.filter = 'brightness(0.93) saturate(1.06)';
+      else if (tag === 'BUTTON') el.style.boxShadow = 'inset 0 0 0 999px rgba(180,83,9,0.10)';
+    };
+    if (mode === 'enter') hover();
+    else if (mode === 'down') { hover(); if (tag === 'BUTTON') el.style.transform = (o.t ? o.t + ' ' : '') + 'translateY(1px)'; }
+    else if (mode === 'up') { el.style.transform = o.t; }
+    else { el.style.boxShadow = o.bs; el.style.filter = o.f; el.style.borderColor = o.bc; el.style.transform = o.t; el._tourOrig = null; }
+  }
+  setExtra(a) { this._extra = a; this.measure(); (this._rTs = this._rTs || []).push(setTimeout(() => this.measure(), 120), setTimeout(() => this.measure(), 320), setTimeout(() => this.measure(), 700)); }
+  extraEls() { return (this._extra || []).map(e => typeof e === 'function' ? e() : e).filter(e => e && e.getBoundingClientRect().width); }
+  cellBox(i, f) { const w = this.win(); return { getBoundingClientRect: () => { const H = w.HY_TOUR, c = H && H.cellPt(i, f), c2 = H && H.cellPt(i === 0 ? 1 : i - 1, f); if (!c || !c2) return { width: 0 }; const g = Math.abs(c.y - c2.y), W = g * 1.3, Hh = g * 0.9; return { left: c.x - W / 2, top: c.y - Hh / 2, right: c.x + W / 2, bottom: c.y + Hh / 2, width: W, height: Hh }; } }; }
+  // 指板上整條弦（i：0 = 第 1 弦）。
+  rowBox(i) { const w = this.win(); return { getBoundingClientRect: () => { const H = w.HY_TOUR, c = H && H.cellPt(i, 1), c2 = H && H.cellPt(i === 0 ? 1 : i - 1, 1), b = this.doc().getElementById('hy-board-box'); if (!c || !c2 || !b) return { width: 0 }; const br = b.getBoundingClientRect(), Hh = Math.abs(c.y - c2.y) * 0.9, bR = H.boardRight && H.boardRight(), R = bR ? Math.min(br.right, bR + 8) : br.right; return { left: br.left, top: c.y - Hh / 2, right: R, bottom: c.y + Hh / 2, width: R - br.left, height: Hh }; } }; }
+  // 找標題是 title 的那個彈出視窗（往上找到 fixed 元素）。
+  dlgOf(title) { const w = this.win(), t = this.all('span[title="' + title + '"]').find(e => e.getBoundingClientRect().width); let e = t; while (e && e !== document.body && w.getComputedStyle(e).position !== 'fixed') e = e.parentElement; if (!e || e === document.body) return null; const kids = Array.from(e.children).filter(k => k.getBoundingClientRect().width); return kids.length === 1 && e.getBoundingClientRect().width >= w.innerWidth - 2 ? kids[0] : e; }
+  // 有 zoom 的小視窗（調弦、框選選單）裡的按鈕：用「按鈕在視窗裡的比例」換算到編輯器算出來的視窗真正位置，不直接相信量到的座標（瀏覽器量 zoom 元素會偏）。
+  zin(el, box, ref, fx, fy) { if (!el) return null; if (!box || !ref) return this.pt(el, fx, fy); const q = ref.getBoundingClientRect(), r = el.getBoundingClientRect(); if (!q.width || !r.width) return this.pt(el, fx, fy); const k = box.width / q.width; return { x: box.left + (r.left - q.left + r.width * (fx == null ? 0.5 : fx)) * k, y: box.top + (r.top - q.top + r.height * (fy == null ? 0.5 : fy)) * k, el }; }
+  tunTaps(P0) { const w = this.win(), pop = this.all('[data-keep-str]').find(e => e.getBoundingClientRect().width && w.getComputedStyle(e).position === 'fixed'), box = w.HY_TOUR && w.HY_TOUR.tunPopBox && w.HY_TOUR.tunPopBox(), P = el => this.zin(el, box, pop); const st = this.qa('[data-str-cell]')[1]; const u = st && st.querySelector('button[title^="升半音"]'), dn = st && st.querySelector('button[title^="降半音"]'); return [u && { t: 'tap', p: P(u), real: true, gap: 700, after: () => this.setExtra([this.rowBox(4)]) }, u && { t: 'tap', p: P(u), real: true, gap: 500 }, dn && { t: 'tap', p: P(dn), real: true, gap: 900 }, dn && { t: 'tap', p: P(dn), real: true, gap: 500 }].filter(Boolean); }
+  qa(sel) { const d = this.doc(); return d ? Array.from(this.all(sel)).filter(e => e.getBoundingClientRect().width) : []; }
+  btn(t) { return this.qa('button').find(b => (b.textContent || '').trim().startsWith(t)); }
+  block(label) { const e = this.findEl({ label })[0]; return e || null; }
+  actions() {
+    const st = this.state, P = (el, fx, fy) => this.pt(el, fx, fy), board = () => this.doc() && this.doc().getElementById('hy-board-box');
+    const A = {
+      fb: [
+        // 主音：點 A → 打開音階選單 → 選「小調五聲」→ 按套入音階鍵。
+        [() => { const b = this.block('主音'); const k = b && Array.from(b.querySelectorAll('button')).find(x => x.getBoundingClientRect().width && (x.textContent || '').trim() === 'A'); const dd = this.qa('[data-dd="sc"] > button')[0]; return [k && { t: 'tap', p: P(k), real: true }, dd && { t: 'tap', p: P(dd), real: true, after: () => { this._avoidHoles = true; this.setExtra([() => { const d = this.doc(), q = d && d.querySelector('[data-dd="sc"]'); return q && q.querySelector(':scope > div') ? q : null; }, () => { const d = this.doc(); return d && d.querySelector('[data-dd="sc"] > div'); }]); } }].filter(Boolean); },
+         () => { const it = this.qa('[data-dd="sc"] button').find(x => (x.textContent || '').trim().startsWith('小調五聲')); return it ? [{ t: 'tap', p: P(it), real: true, gap: 700 }] : []; },
+         () => { const fk = this.qa('button[title^="套入音階 Fill scale"]')[0]; return fk ? [{ t: 'tap', p: P(fk), real: true, gap: 700, hold: 600 }] : []; }],
+        [() => { const w = this.win(), cp = w && w.HY_TOUR && w.HY_TOUR.cellPt(4, 5); return [{ t: 'tap', p: P(this.qa('button[title^="靛藍"]')[0]), real: true }, cp && { t: 'tap', p: cp, act: () => w.HY_TOUR.hit(4, 5), gap: 1300, pre: () => this.setExtra([this.cellBox(4, 5)]) }].filter(Boolean); },
+         () => [{ t: 'rtap', p: P(this.qa('button[title^="松綠"]')[0]) }],
+         () => [{ t: 'tap', p: P(this.qa('button[title="圓形·小"]')[0]), real: true }],
+         () => { const lab = this.qa('span').find(e => e.getBoundingClientRect().width && ['整組', '整組上色', '依級數上色'].indexOf((e.textContent || '').trim()) >= 0); const b = lab && Array.from(lab.parentElement.querySelectorAll('button')).find(x => x.getBoundingClientRect().width && (x.textContent || '').trim() === '2'); return b ? [{ t: 'tap', p: P(b), real: true, hold: 900, gap: 1400, pre: () => this.setExtra([board()]) }] : []; }],
+        // 調弦：先點指板右上角的調弦按鈕打開小視窗，再把第 2 弦升半音、降半音，指板上的音階會跟著移動。
+        [() => { const tag = this.qa('button[title="調弦 Tuning"]')[0]; this._tunTag = !!tag; if (!tag) return this.tunTaps(P);
+           return [{ t: 'tap', p: P(tag), real: true, hold: 500, after: () => [60, 200, 400].forEach(ms => this._rTs.push(setTimeout(() => this.measure(), ms))) }]; },
+         () => this._tunTag ? this.tunTaps(P) : []],
+        // 框選：空白指板上從第 5 格拉到第 8 格（六條弦），按右鍵，再按「套入音階」→ A 小調五聲只填進這個範圍。
+        [() => { const w = this.win(), H = w && w.HY_TOUR; const a = H && H.cellPt(0, 5), b = H && H.cellPt(5, 8); if (!a || !b) return []; return [{ t: 'drag', live: true, p: a, q: b }, { t: 'ctx', p: b }]; },
+         () => { const m = this.doc().querySelector('[data-chord-menu]'); const b = m && Array.from(m.querySelectorAll('button')).find(x => (x.textContent || '').trim() === '套入音階'), w = this.win(), box = w.HY_TOUR && w.HY_TOUR.cmBox && w.HY_TOUR.cmBox(); return b ? [{ t: 'tap', p: this.zin(b, box, m), real: true, hold: 1600 }] : []; }],
+        // A／B：按 A（G 大調）→ 按 B（E 大調）→ 游標收起，換成 Space 鍵帽連按三下來回切換。
+        () => { const ab = this.qa('[data-ab]'), kp = this.keyPt(), w = this.win(); return [
+          { t: 'tap', p: P(ab[0]), real: true, nofx: true, gap: 900, pre: () => this.setExtra([board()]) },
+          { t: 'tap', p: P(ab[2]), real: true, nofx: true, gap: 1200, hold: 500 },
+          kp && { t: 'key', p: kp, n: 3, hold: 900, press: () => { try { w.HY_TOUR.toggleAB(); } catch (e) {} } }].filter(Boolean); },
+        // 存檔：點「檔案」打開視窗 → 點裡面的「匯出圖片」看預覽 → 關閉。亮框跟著延伸到打開的視窗。
+        [() => [{ t: 'tap', p: P(this.btn('檔案')), real: true, hold: 1000, after: () => this.setExtra([() => this.dlgOf('檔案 File')]) }],
+         // 檔案視窗打開後停一下，游標在視窗裡往下、往上滑過幾個按鈕，再點「匯出圖片」。
+         () => { const dl = this.dlgOf('檔案 File'); if (!dl) return []; const bs = Array.from(dl.querySelectorAll('button')).filter(x => x.getBoundingClientRect().width && !/^關閉/.test(x.title || '')), b = bs.find(x => (x.textContent || '').trim().startsWith('匯出圖片')); if (!b) return []; const lo = bs[bs.length - 1], mid = bs[Math.floor(bs.length / 2)];
+           return [lo && lo !== b && { t: 'move', p: P(lo), gap: 900, hold: 450 }, mid && mid !== b && mid !== lo && { t: 'move', p: P(mid), gap: 650, hold: 450 }, { t: 'tap', p: P(b), real: true, gap: 650, hold: 2600, after: () => this.setExtra([() => this.dlgOf('匯出圖片 Export')]) }].filter(Boolean); },
+         () => { const dl = this.dlgOf('匯出圖片 Export'), b = dl && dl.querySelector('button[title="關閉 Close"]'); return b ? [{ t: 'tap', p: P(b), real: true, hold: 400, after: () => this.setExtra(null) }] : []; }],
+        () => [],
+      ],
+      ch: [
+        () => { const b = this.block('整頁設定'), q = t => b && Array.from(b.querySelectorAll('button[title="' + t + '"]'))[0], dg = q('級數 Degrees'), off = q('關 Off'); return [dg && { t: 'tap', p: P(dg), real: true, hold: 900, pre: () => this.setExtra(this.qa('[data-side]')) }, off && { t: 'tap', p: P(off), real: true, hold: 900 }].filter(Boolean); },
+        [() => { const b = this.block('查和弦按法'), inp = b && b.querySelector('input'); if (!inp) return []; const w = this.win();
+           // 點下輸入框後停一下才打第一個字，之後每字 0.26 秒。
+           const type = () => { const s = 'Am7'; for (let k = 1; k <= s.length; k++) this._rTs.push(setTimeout(() => { try { w.HY_TOUR.lookup(s.slice(0, k)); } catch (e) {} }, 650 + (k - 1) * 260)); [800, 1100, 1400, 1800].forEach(ms => this._rTs.push(setTimeout(() => this.measure(), ms))); };
+           return [{ t: 'tap', p: P(inp), after: type, hold: 1700 }]; },
+         () => { const b = this.block('查和弦按法'), nx = b && b.querySelector('button[title^="下一個"]'); return nx ? [{ t: 'tap', p: P(nx), real: true }, { t: 'tap', p: P(nx), real: true }] : []; },
+         () => { const w = this.win(), b = this.block('查和弦按法'), ad = b && b.querySelector('button[title^="加入"]'); return ad ? [{ t: 'tap', p: P(ad), real: true, hold: 1200, after: () => { this.setExtra([() => { const cs = this.qa('[data-card]'); return cs[cs.length - 1]; }]); this._rTs.push(setTimeout(() => { try { w.HY_TOUR.clearSel(); } catch (e) {} this.measure(); }, 250)); } }] : []; }],
+        () => [{ t: 'tap', p: P(this.qa('[data-add-chord]')[0]), real: true }],
+        // 編輯和弦圖：選最後一張空白和弦 → 第 1 格從第 6 弦拖到第 1 弦畫封閉 → 點第 3 弦第 2 格、第 5 弦第 3 格、第 4 弦第 3 格（F 和弦）。s：0＝第 6 弦、5＝第 1 弦。
+        () => {
+          const cs = this.qa('[data-card]'), c = cs[cs.length - 1], w = this.win(); if (!c) return [];
+          const H = () => w.HY_TOUR, C = (s, col) => this.demoCell(s, col), a = C(0, 0), b = C(5, 0);
+          const out = [{ t: 'tap', p: P(c, 0.5, 0.1), act: () => H().select(-1), hold: 200 }];
+          if (a && b) out.push({ t: 'drag', p: a, q: b, gap: 500, track: [1, 2, 3, 4].map(k => [k / 5, () => { try { H().barre(-1, 0, k, 0); } catch (e) {} }]), end: () => H().barre(-1, 0, 5, 0) });
+          [[3, 1], [1, 2], [2, 2]].forEach(([s, col]) => { const p = C(s, col); if (p) out.push({ t: 'tap', p, fast: true, gap: 380, act: () => H().dot(-1, s, col) }); });
+          if (out.length > 1) out[out.length - 1].hold = 1800;
+          return out;
+        },
+        [() => { const pe = this.popEl(), up = pe && this.win().getComputedStyle(pe).visibility !== 'hidden' && pe.querySelector('button[title^="位置往上"]'); return up ? [{ t: 'tap', p: P(up), real: true }] : []; },
+         // 顯示根音：點一下切換（目前開就點「關」，關就點「開」）。
+         () => { const pe = this.popEl(), on = pe && Array.from(pe.querySelectorAll('button[title^="標出根音"]')).find(x => x.getBoundingClientRect().width), off = on && on.parentElement.querySelector('button[title^="不標根音"]'); if (!on || !off) return []; const sl = on.parentElement.querySelector('span'), isOff = !!sl && (sl.style.transform || '').indexOf('100%') >= 0; return [{ t: 'tap', p: P(isOff ? on : off), real: true, hold: 900 }]; },
+         () => { const pe = this.popEl(); const clr = pe && Array.from(pe.querySelectorAll('button[title^="清空和弦"]')).find(b => b.getBoundingClientRect().width); return clr ? [{ t: 'tap', p: P(clr), real: true, hold: 900 }] : []; }],
+        [() => { const c = this.qa('[data-card]'); if (c.length < 2) return []; const a = c[0].getBoundingClientRect(), b = c[1].getBoundingClientRect(); const w = this.win(); const H = () => w.HY_TOUR;
+           return [{ t: 'drag', ghost: c[0], p: { x: a.left + a.width / 2, y: a.top + a.height * 0.12 }, q: { x: b.left + b.width * 0.7, y: b.top + b.height * 0.12 },
+             start: () => { try { H().dragStart(0); } catch (e) {} }, mid: [0.6, () => { try { H().dropOver(1); } catch (e) {} }],
+             end: () => { try { H().dragEnd(); H().move(0, 1); } catch (e) {} } }]; },
+         () => { const c = this.qa('[data-card]'); if (c.length < 2) return []; const a = c[0].getBoundingClientRect(), b = c[1].getBoundingClientRect(); const w = this.win();
+           return [{ t: 'drag', box: true, p: { x: a.left - 12, y: a.top - 12 }, q: { x: b.right - 24, y: b.bottom - 30 }, end: () => { try { w.HY_TOUR.selectMany([0, 1]); } catch (e) {} setTimeout(() => this.measure(), 120); setTimeout(() => this.measure(), 400); }, hold: 1600 }]; },
+         // 多選的編輯和弦視窗：點左手指法切換。
+         () => { const pe = this.popEl(), on = pe && Array.from(pe.querySelectorAll('button[title^="標出指法"]')).find(x => x.getBoundingClientRect().width), off = on && on.parentElement.querySelector('button[title^="不標指法"]'); if (!on || !off) return []; const sl = on.parentElement.querySelector('span'), isOff = !!sl && (sl.style.transform || '').indexOf('100%') >= 0; return [{ t: 'tap', p: P(isOff ? on : off), real: true, hold: 900 }]; }],
+        null, // 存檔：跟指板同一組動作（下面補上）
+        () => [],
+      ],
+    };
+    A.ch[A.ch.length - 2] = A.fb[A.fb.length - 2];
+    const f = A[st.app][st.step];
+    return (Array.isArray(f) ? f : f ? [f] : []).map(g => () => { try { return g().filter(a => a && a.p && (a.t !== 'drag' || a.q)); } catch (e) { return []; } });
+  }
+  // 拖曳和弦圖時跟著游標走的半透明影子（跟瀏覽器拖曳時一樣）。
+  makeGhost(el, p) {
+    this.dropGhost(); const r = el.getBoundingClientRect(), k = r.width / (el.offsetWidth || r.width);
+    const o = document.createElement('div'); o.style.cssText = 'position:fixed;left:0;top:0;z-index:33;pointer-events:none;opacity:0.72;';
+    const inner = el.cloneNode(true); inner.style.zoom = k; inner.style.boxShadow = 'var(--shadow-lg)'; inner.style.margin = '0'; inner.style.background = 'var(--surface-card)'; o.appendChild(inner);
+    (this.rootRef.current || document.body).appendChild(o); this._ghost = { o, dx: p.x - r.left, dy: p.y - r.top };
+  }
+  dropGhost() { if (this._ghost) { this._ghost.o.remove(); this._ghost = null; } }
+  stopFinger() {
+    this._fTok = (this._fTok || 0) + 1; clearTimeout(this._fT); this.dropGhost(); this._lastFp = null; this._extra = null; this._lkGp = null; this._avoidHoles = false;
+    (this._rTs || []).forEach(clearTimeout); this._rTs = [];
+    (this._fxEls || []).forEach(el => this.fx(el, 'leave')); this._fxEls = [];
+    [this.fingerRef.current, this.boxRef.current, this.dotRef.current, this.keyRef.current].forEach(el => { if (el) { el.getAnimations && el.getAnimations().forEach(a => a.cancel()); el.style.opacity = '0'; } });
+  }
+  runFinger() {
+    this.stopFinger();
+    const tok = this._fTok;
+    this.prepStep();
+    this._fT = setTimeout(() => { if (tok === this._fTok) this.runCore(tok); }, 160);
+  }
+  // 和弦示範是不存檔的 C 大調和弦本，每次重播前恢復原狀；需要先選取和弦的步驟先選好。
+  // 編輯和弦圖那步點的格子（最後一張和弦、第 3 弦第 2 格）。下一步先補回同一顆圓點，再示範清空。
+  demoCell(s0, col0) { const cs = this.qa('[data-card]'), c = cs[cs.length - 1]; if (!c) return null; const k = c.getBoundingClientRect().width / 258; const bd = Array.from(c.querySelectorAll('div')).map(e => [e, e.getBoundingClientRect()]).find(([e, r]) => Math.abs(r.width - 176 * k) < 3 && r.height > 120 * k); if (!bd) return null; const r = bd[1], s = s0 == null ? 3 : s0, col = col0 == null ? 1 : col0; return { x: r.left + (col + 0.5) / 4 * r.width, y: r.top + (15 + (5 - s) * 30) * k }; }
+  prepStep() {
+    const st = this.state, w = this.win(); if (!w || !w.HY_TOUR || st.step < 0) return;
+    const s = TOURS[st.app][st.step];
+    // 每次換步驟／重播前先關掉示範打開的視窗（檔案、匯出圖片）。
+    try { w.HY_TOUR.closeDlg && w.HY_TOUR.closeDlg(); } catch (e) {}
+    if (st.app === 'fb') { try { w.HY_TOUR.reset(s.lv || 0); } catch (e) {} return; }
+    try { w.HY_TOUR.reset(s ? s.prep : null, !!(s && s.redoDot)); } catch (e) {}
+  }
+  // 真的點下去（只用在和弦示範，資料不會存）。
+  // v2.4.5：動作不再靠「畫面座標找元素」（Safari 縮放時會找錯）。有 act 就直接叫編輯器做；否則直接點找到的那個元素本身。
+  realClick(p, act) {
+    if (act) { try { act(); } catch (e) {} return; }
+    const d = this.doc(), w = this.win(); if (!d || !w || !p) return;
+    const el = p.el && p.el.isConnected ? p.el : this.hit(p); if (!el) return;
+    const o = { bubbles: true, cancelable: true, clientX: p.x, clientY: p.y, button: 0, view: w };
+    const P = (n, b) => { try { el.dispatchEvent(new w.PointerEvent(n, { ...o, buttons: b, pointerId: 1, isPrimary: true, pointerType: 'mouse' })); } catch (e) {} };
+    const M = (n, b) => el.dispatchEvent(new w.MouseEvent(n, { ...o, buttons: b }));
+    P('pointerdown', 1); M('mousedown', 1); P('pointerup', 0); M('mouseup', 0); M('click', 0);
+  }
+  realCtx(p) {
+    const d = this.doc(), w = this.win(); if (!d || !w || !p) return;
+    const el = p.el && p.el.isConnected ? p.el : this.hit(p); if (!el) return;
+    el.dispatchEvent(new w.MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: p.x, clientY: p.y, button: 2, view: w }));
+  }
+  runCore(tok, ph) {
+    ph = ph || 0;
+    this.measure();
+    const f = this.fingerRef.current;
+    if (!f || !f.animate || this.state.step < 0) return;
+    const phs = this.actions(), acts = phs[ph] ? phs[ph]() : [], more = ph < phs.length - 1;
+    // 第一段找不到要點的東西（例如編輯視窗還沒出現）：重新準備這一步再試，最多 8 次，不會整步沒動作。
+    if (!acts.length) { if (ph) { this._fT = setTimeout(() => { if (tok === this._fTok) this.runFinger(); }, 900); return; } this._r0 = (this._r0 || 0) + 1; if (this._r0 <= 8) this._fT = setTimeout(() => { if (tok !== this._fTok) return; if (this._r0 % 2 === 0) this.prepStep(); this._fT = setTimeout(() => { if (tok === this._fTok) this.runCore(tok, 0); }, 250); }, 250); return; }
+    if (!ph) this._r0 = 0;
+    const TX = 2, TY = 2, E = 'cubic-bezier(.2,.6,.2,1)';
+    const tf = (p) => 'translate(' + (p.x - TX) + 'px,' + (p.y - TY) + 'px)';
+    const seg = [], evs = []; let t = 0;
+    const S = TOURS[this.state.app][this.state.step].board ? 0.7 : 0.85, DD = 1000 * S;
+    const add = (p, o, down, dur) => { t += dur * S; seg.push({ t, p, o, down }); };
+    const p0 = acts[0].p, lp = ph ? this._lastFp : null;
+    seg.push(lp ? { t: 0, p: lp, o: 1, down: false } : { t: 0, p: { x: p0.x + 60, y: p0.y + 70 }, o: 0, down: false });
+    acts.forEach((a, i) => {
+      add(a.p, 1, false, i || lp ? (a.gap || 620) : 520);
+      if (a.pre) evs.push({ t: t - (a.gap || 620) * S, run: a.pre });
+      const el = a.nofx ? null : a.p.el;
+      if (el) evs.push({ t, el, m: 'enter' });
+      if (a.t === 'drag') {
+        add(a.p, 1, true, 260);
+        { const pp = a.p; evs.push({ t: t - 200 * S, run: () => this.clickFx(pp) }); }
+        if (a.ghost) { const g = a.ghost, pp = a.p; evs.push({ t, run: () => { this.makeGhost(g, pp); if (a.start) a.start(); } }); }
+        if (a.mid) evs.push({ t: t + DD * a.mid[0], run: a.mid[1] });
+        // 跟著游標實際位置（動畫有加速減速）觸發：游標走到第幾成，就在那時候執行。
+        if (a.track) a.track.forEach(([fr, fn]) => evs.push({ t: t + DD * this.easeAt(fr), run: fn }));
+        if (a.box) evs.push({ t, run: () => this.showBox(a.p, a.q, DD) });
+        if (a.live) for (let k = 1; k <= 10; k++) { const f = k / 10, cur = { x: a.p.x + (a.q.x - a.p.x) * f, y: a.p.y + (a.q.y - a.p.y) * f }; evs.push({ t: t + DD * f, run: () => { const w = this.win(); try { w.HY_TOUR.marquee(a.p, cur); } catch (e) {} } }); }
+        add(a.q, 1, true, 1000); add(a.q, 1, false, 160);
+        if (a.ghost) evs.push({ t, run: () => this.dropGhost() });
+        if (a.end) evs.push({ t, run: a.end });
+        if (a.box) evs.push({ t, run: () => { const b = this.boxRef.current; if (b) b.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'forwards' }); } });
+        if (a.hold) add(a.q, 1, false, a.hold);
+      }
+      else if (a.t === 'key') {
+        add(a.p, 0, false, 320);
+        evs.push({ t, run: () => this.showKey(a.p) });
+        add(a.p, 0, false, 500);
+        for (let k = 0; k < (a.n || 3); k++) { add(a.p, 0, false, k ? 900 : 200); evs.push({ t, run: () => { this.pressKey(); if (a.press) a.press(); } }); }
+        if (a.hold) add(a.p, 0, false, a.hold);
+      }
+      else if (a.t === 'ctx') {
+        add(a.p, 1, false, 260);
+        { const pp = a.p; evs.push({ t, run: () => this.clickFx(pp) }); }
+        evs.push({ t, run: () => { const w = this.win(); try { w.HY_TOUR.ctx(a.p.x, a.p.y); } catch (e) {} setTimeout(() => this.measure(), 60); } });
+        add(a.p, 1, false, 1400);
+      }
+      else if (a.t === 'move') {
+        if (a.hold) add(a.p, 1, false, a.hold);
+        if (el) evs.push({ t, el, m: 'leave' });
+      }
+      else {
+        const fk = a.fast ? 0.45 : 1;
+        add(a.p, 1, false, 220 * fk); if (el) evs.push({ t, el, m: 'down' }); { const pp = a.p; evs.push({ t, run: () => this.clickFx(pp) }); }
+        if (a.real || a.act) evs.push({ t, run: () => this.realClick(a.p, a.act) });
+        if (a.t === 'rtap') evs.push({ t, run: () => this.realCtx(a.p) });
+        if (a.after) evs.push({ t, run: a.after });
+        add(a.p, 1, false, 140 * fk); if (el) evs.push({ t, el, m: 'up' });
+        add(a.p, 1, false, 360 * fk); if (el) evs.push({ t, el, m: 'leave' });
+        if (a.hold) add(a.p, 1, false, a.hold);
+      }
+    });
+    const last = seg[seg.length - 1].p;
+    if (more) { add(last, 1, false, 260); this._lastFp = last; }
+    else {
+    add({ x: last.x + 20, y: last.y + 30 }, 0, false, 320);
+    add({ x: last.x + 20, y: last.y + 30 }, 0, false, 500);
+    evs.push({ t: t - 300, run: () => [this.boxRef.current, this.dotRef.current].forEach(el => { if (el && el.style.opacity !== '0') el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, fill: 'forwards' }); }) });
+    }
+    const total = t;
+    const anim = f.animate(seg.map(s => ({ offset: s.t / total, transform: tf(s.p), opacity: s.o, easing: E })), { duration: total, fill: 'forwards' });
+    // 按鈕效果、框選框、圓點跟著游標動畫的實際時間走。
+    const q = evs.map(k => ({ t: k.t, run: k.run || (() => { this.fx(k.el, k.m); if (k.m === 'enter') this._fxEls.push(k.el); if (k.m === 'leave') this._fxEls = this._fxEls.filter(x => x !== k.el); }) }));
+    q.sort((a, b) => a.t - b.t);
+    let i = 0;
+    const tick = () => {
+      if (tok !== this._fTok) return;
+      const ct = anim.currentTime || 0;
+      while (i < q.length && q[i].t <= ct) { try { q[i].run(); } catch (e) {} i++; }
+      if (this._ghost) { const fr = f.getBoundingClientRect(); this._ghost.o.style.transform = 'translate(' + (fr.left + TX - this._ghost.dx) + 'px,' + (fr.top + TY - this._ghost.dy) + 'px)'; }
+      if (anim.playState !== 'finished') requestAnimationFrame(tick);
+      else { while (i < q.length) { try { q[i].run(); } catch (e) {} i++; } if (more) { this._fT = setTimeout(() => { if (tok === this._fTok) this.runCore(tok, ph + 1); }, 60); return; } this._fT = setTimeout(() => { if (tok === this._fTok) this.runFinger(); }, 600); }
+    };
+    requestAnimationFrame(tick);
+  }
+  // cubic-bezier(.2,.6,.2,1)：游標走到 p 成距離時，時間過了幾成。
+  easeAt(p) { const bz = (t, a, b) => 3 * (1 - t) * (1 - t) * t * a + 3 * (1 - t) * t * t * b + t * t * t; for (let t = 0; t <= 1; t += 0.005) { if (bz(t, 0.6, 1) >= p) return bz(t, 0.2, 0.2); } return 1; }
+  // 框選框：跟 app 裡拖曳時出現的虛線框同樣式，從起點跟著游標拉開。
+  showBox(p, q, dur) {
+    const b = this.boxRef.current; if (!b) return;
+    const x = Math.min(p.x, q.x), y = Math.min(p.y, q.y), w = Math.abs(q.x - p.x), h = Math.abs(q.y - p.y);
+    b.style.left = x + 'px'; b.style.top = y + 'px';
+    const fb = this.state.app === 'fb';
+    b.style.border = fb ? '1.5px solid var(--primary)' : '1px solid var(--primary)';
+    b.style.background = fb ? 'rgba(217,119,6,0.12)' : 'rgba(217,119,6,0.08)';
+    b.style.borderRadius = fb ? 'var(--radius-sm)' : '0';
+    b.animate([{ width: '0px', height: '0px', opacity: 1 }, { width: w + 'px', height: h + 'px', opacity: 1 }], { duration: dur, easing: 'cubic-bezier(.2,.6,.2,1)', fill: 'forwards' });
+  }
+  showDot(p, d) {
+    const el = this.dotRef.current; if (!el) return;
+    el.style.left = (p.x - d / 2) + 'px'; el.style.top = (p.y - d / 2) + 'px'; el.style.width = d + 'px'; el.style.height = d + 'px';
+    el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 150, fill: 'forwards' });
+  }
+  go(d) { const n = TOURS[this.state.app].length, s = this.state.step + d; if (s >= n) { try { window.hyTrack && window.hyTrack('tour_complete'); } catch (e) {} this.stop(); } else this.show(Math.max(0, s)); }
+  stop() { try { window.HY_TOUR && window.HY_TOUR.closeDlg && window.HY_TOUR.closeDlg(); } catch (e) {} this.stopFinger(); this.setState({ step: -1, sp: null, gp: null, ready: false }); this._hadSp = false; this.leave(); if (this.props.onClose) this.props.onClose(); }
+  renderVals() {
+    const st = this.state, list = TOURS[st.app], touring = st.step >= 0;
+    const cur = touring ? list[st.step] : { title: '', body: '' };
+    return {
+      rootRef: this.rootRef, groupRef: this.groupRef, fingerRef: this.fingerRef, keyRef: this.keyRef, boxRef: this.boxRef, dotRef: this.dotRef,
+      rootOp: st.ready ? 1 : 0,
+      gpOp: this._entering && st.gp && st.gp.x < -400 ? 0 : 1,
+      gpTr: this._entering ? 'left 600ms cubic-bezier(.2,.6,.2,1), top 600ms cubic-bezier(.2,.6,.2,1), opacity 600ms cubic-bezier(.2,.6,.2,1)' : 'left 260ms cubic-bezier(.2,.6,.2,1), top 260ms cubic-bezier(.2,.6,.2,1)',
+      touring, cur, sp: st.sp || { x: 0, y: 0, w: 0, h: 0 }, holes: st.holes || [], gp: st.gp || { x: -9999, y: 0 },
+      spOp: st.sp ? 1 : 0, spTr: (() => { const T = 'x 260ms cubic-bezier(.2,.6,.2,1), y 260ms cubic-bezier(.2,.6,.2,1), width 260ms cubic-bezier(.2,.6,.2,1), height 260ms cubic-bezier(.2,.6,.2,1)'; const had = this._hadSp; this._hadSp = !!st.sp; return had && st.sp ? T : 'none'; })(),
+      stepLabel: (st.step + 1) + ' / ' + list.length,
+      pips: list.map((_, i) => ({ c: i <= st.step ? 'var(--primary)' : 'var(--hairline)' })),
+      notFirst: st.step > 0, nextLabel: st.step === list.length - 1 ? '完成' : '下一步',
+      onNext: () => this.go(1), onPrev: () => this.go(-1), onSkip: () => this.stop(),
+    };
+  }
+}
+</script>
+</body>
+</html>

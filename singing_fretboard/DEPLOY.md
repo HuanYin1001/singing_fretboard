@@ -1,23 +1,23 @@
-# 弦吟指板筆記 Singing Fretboard Notes — 部署說明
+# 弦吟指板筆記 Singing Fretboard Notes — 部署說明（v3.1.0 靜態網站）
 
 這個資料夾就是完整的 App。把 **`app/` 裡的所有檔案**放到一個 GitHub repo，用 Vercel 部署，就會得到一個可安裝的網頁 App。
 
 ---
 
-## 一、資料夾裡有什麼
+## 一、資料夾裡有什麼（v3.1.0 起是靜態網站：每個檔案分開放，不用解壓）
 
 | 檔案 | 用途 |
 |---|---|
-| `index.html` | **App 本體**。單一自含檔案（約 7 MB，字體、樣式、程式都已內嵌）。 |
-| `manifest.webmanifest` | App 的名稱、圖示、顯示方式。安裝後 Dock 上顯示 **Singing Fretboard**，橫式、獨立視窗。 |
-| `sw.js` | 離線快取（Service Worker）。第一次開啟後，之後沒網路也能用。 |
-| `icons/` | App 圖示，由你的 logo 產生：192、512、512 maskable、Apple touch 180。 |
-| `assets/huanyin_logo.jpg` | 匯出圖片右上角的 logo 浮水印會讀這個檔，**不要刪**。 |
-| `vercel.json` | 讓 `sw.js` 與 `index.html` 不被過度快取，改版後使用者才會拿到新版。 |
-
-這個部署版本已預設**匯出時加入 Logo**（匯出面板裡的「加入 Logo」開啟）。
-
----
+| `index.html` | 指板編輯器。 |
+| `chord.html` | 和弦編輯器。 |
+| `tour.dc.html` | 使用導覽（兩頁共用）。 |
+| `support.js`、`vendor/` | 讓畫面跑起來的程式（React 放在 `vendor/`，離線也能用）。 |
+| `ds/` | 設計系統的顏色、字體、樣式。 |
+| `*.js`（`fretboard-music.js` 等 8 個） | 音樂計算、存檔、連動、導覽文字、共用外殼、Safari 縮放校正。 |
+| `manifest.webmanifest`、`icons/` | App 名稱與圖示。 |
+| `sw.js` | 離線快取。**每一個檔案都要列在裡面的 CORE 清單**。只在正式網址和 `*.vercel.app` 啟用。 |
+| `assets/` | logo、導覽頭像、提示音、分享預覽圖。 |
+| `vercel.json`、`robots.txt`、`sitemap.xml` | 快取設定、搜尋引擎設定。 |
 
 ## 二、部署到 Vercel（用你現有的免費帳號）
 
@@ -55,12 +55,21 @@
 
 ## 四、之後要更新
 
-1. 我修改編輯器 → 重新產生 `index.html`。
-2. 你把新的 `index.html` push 到 repo，Vercel 自動重新部署。
+1. 我修改編輯器 → 重新產生整個資料夾。
+2. 你把整個資料夾的內容上傳到 repo（同檔名會直接取代），Vercel 自動重新部署。
 3. **重要**：如果同時改了 `sw.js` 以外的檔案而使用者拿到舊版，把 `sw.js` 裡的
    `const VERSION = 'sf-v1';` 改成 `'sf-v2'`（依序遞增）再 push，所有裝置就會重新下載。
 
-### 本次更新（v3.0.14，`sf-v57`，2026-10-06）
+### 本次更新（v3.1.0 靜態網站，`sf-v58`，2026-10-06）
+
+- 改成靜態網站：檔案分開放，打開時不用先解壓，米色等待時間變短。畫面、功能、資料跟 v3.0.14 一樣。
+- 新增 `support.js`、`tour.dc.html`、`vendor/`、`ds/`；`sw.js` 改列出全部檔案。
+- 存檔名稱沒變（`hy-fb-v2_2-`），舊使用者的資料照常讀到。
+- 離線快取只在 `fretboard.huanyinliu.com` 和 `*.vercel.app` 啟用。
+- **這次要上傳**：整個資料夾。原本 repo 裡的檔案都還用得到，**沒有要刪的檔**；同檔名會被取代。
+- 改版前的單檔打包版（v3.0.14，`sf-v57`）備份在專案的「部署備份 backup/v3.0.14 app 單檔打包 sf-v57」。
+
+### 前次更新（v3.0.14，`sf-v57`，2026-10-06）
 
 - 從現行編輯器（v3.0.14）重新打包 `index.html`、`chord.html`。
 - 左下「使用導覽」「訂閱」按鈕蓋到畫面內容時自動縮成精簡版（只有大頭貼／信封＋「訂閱」）；每顆按鈕約三分之一被蓋到才縮，視窗放大後恢復。指板、和弦兩頁都有。

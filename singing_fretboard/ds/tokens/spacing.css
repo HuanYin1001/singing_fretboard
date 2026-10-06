@@ -1,0 +1,26 @@
+:root{
+  /* 4px base. Odd steps exist because printed/poster work needs the half-steps. */
+  --space-0:0;
+  --space-1:2px;
+  --space-2:4px;
+  --space-3:6px;
+  --space-4:8px;
+  --space-5:12px;
+  --space-6:16px;
+  --space-7:20px;
+  --space-8:24px;
+  --space-9:32px;
+  --space-10:40px;
+  --space-11:56px;
+  --space-12:72px;
+  --space-13:96px;
+  --space-14:128px;
+
+  /* layout */
+  --gutter-page:24px;
+  --gutter-page-lg:56px;
+  --measure:64ch;        /* 拉丁文段落最大寬 */
+  --measure-cjk:34em;    /* 中文段落最大寬（約 34 字） */
+  --width-content:720px;
+  --width-wide:1080px;
+}
