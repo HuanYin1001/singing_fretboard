@@ -109,6 +109,7 @@ window.HY_FONTS_READY = (function () {
     armFab() {
       if (this._fabArmed) return; this._fabArmed = true;
       this._fabT = setTimeout(() => { this.setState({ fabIn: true }); this.tourGlow(); this.subPulse(); }, this._shellOpts.fabDelay);
+      this._fabFitI = setInterval(() => this.fabFit(), 700);
     },
     // 訂閱按鈕：每 60 秒信封放大搖晃一次（3 秒）；前景使用滿 20 分鐘響一聲輕叮，之後每 20 分鐘一次（兩頁共用計時）。
     subPulse() {
@@ -139,6 +140,8 @@ window.HY_FONTS_READY = (function () {
           this.setState({ exportOpen: true, exportLogo: true });
           return;
         }
+        // ⌘⇧M／Ctrl+Shift+M：圓點音效開／關（記在瀏覽器 hy-note-sound，兩頁共用，預設關）。
+        if (e.code === 'KeyM' && e.shiftKey) { e.preventDefault(); e.stopPropagation(); this.setSound(!this.soundOn()); return; }
         // ⌘⇧G／Ctrl+Shift+G（G＝Glow 發光）：導覽按鈕重新發光＋對話框，訂閱信封搖晃＋叮聲。只播一次，不動原本的計時。
         if (e.code === 'KeyG' && e.shiftKey) { e.preventDefault(); e.stopPropagation(); this.replayGlow(); this.envShake(true, true); return; }
         // ⌘⇧X／Ctrl+Shift+X：重播開場動畫（導覽中不播）。
@@ -155,6 +158,12 @@ window.HY_FONTS_READY = (function () {
         this.setState({ intro: true });
         this._introT = setTimeout(() => this.setState({ intro: false }), 5000);
       }));
+    },
+    soundOn() { try { return localStorage.getItem('hy-note-sound') === '1'; } catch (e) { return false; } },
+    setSound(on) {
+      try { localStorage.setItem('hy-note-sound', on ? '1' : '0'); } catch (e) {}
+      this.setState({ noteSoundOn: on });
+      this.shellToast(on ? '已開啟圓點音效' : '已關閉圓點音效');
     },
     shellToast(msg) {
       clearTimeout(this._toastT);
@@ -181,6 +190,102 @@ window.HY_FONTS_READY = (function () {
         clearInterval(this._dingFade); const t0 = performance.now();
         this._dingFade = setInterval(() => { const t = performance.now() - t0; if (t < 350) return; const k = Math.max(0, 1 - (t - 350) / 700), v = 0.35 * k * k; a.volume = v; if (v <= 0) { clearInterval(this._dingFade); this._dingFade = null; a.pause(); } }, 20);
       } catch (e) {}
+    },
+    // 圓點音效（2026-10-06）：放入音或改顏色／形狀時發出該音。kind：'A'＝合成撥弦（Karplus-Strong）、'B'＝柔和電子音（音樂盒／電鋼琴）、其他＝不出聲。
+    playNote(midi, kind) {
+      if (!/^[A-G]$/.test(kind || '')) return;
+      try {
+        const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+        const ac = window.__hyAC || (window.__hyAC = new C());
+        if (ac.state === 'suspended') ac.resume();
+        const t = ac.currentTime + 0.01, hz = 440 * Math.pow(2, (midi - 69) / 12);
+        const out = ac.createGain(); out.connect(ac.destination);
+        if (kind === 'C' || kind === 'D' || kind === 'E') {
+          // C 木琴／馬林巴：短、溫暖；D 鋼片琴：亮、音尾長；E 弦樂墊：慢慢浮出。
+          const P = kind === 'C' ? { a: 0.003, g: 0.4, d: 0.55, cut: 6, parts: [[1, 1, 0.55], [4, 0.22, 0.12], [9.9, 0.05, 0.05]] }
+            : kind === 'D' ? { a: 0.002, g: 0.26, d: 2.2, cut: 9, parts: [[1, 1, 2.2], [3, 0.3, 0.9], [5.4, 0.08, 0.35], [8.2, 0.03, 0.15]] }
+            : { a: 0.18, g: 0.16, d: 1.8, cut: 3, parts: [[1, 1, 1.8], [2.003, 0.35, 1.8], [0.998, 0.6, 1.8]], saw: true };
+          const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = Math.min(6000, hz * P.cut); lp.connect(out);
+          out.gain.setValueAtTime(0.0001, t); out.gain.exponentialRampToValueAtTime(P.g, t + P.a); out.gain.exponentialRampToValueAtTime(0.0001, t + P.a + P.d);
+          P.parts.forEach(([m, g, dur]) => {
+            const o = ac.createOscillator(), og = ac.createGain(); o.type = P.saw ? 'triangle' : 'sine'; o.frequency.value = hz * m;
+            og.gain.setValueAtTime(g, t); if (!P.saw) og.gain.exponentialRampToValueAtTime(0.0001, t + P.a + dur);
+            o.connect(og); og.connect(lp); o.start(t); o.stop(t + P.a + P.d + 0.1);
+          });
+        } else if (kind === 'A' || kind === 'F' || kind === 'G') {
+          const soft = kind === 'G', cache = soft ? (window.__hyKS2 || (window.__hyKS2 = {})) : (window.__hyKS || (window.__hyKS = {}));
+          let buf = cache[midi];
+          if (!buf) {
+            const sr = ac.sampleRate, len = Math.floor(sr * 2.2), N = Math.max(2, Math.round(sr / hz)), d = new Float32Array(len), ring = new Float32Array(N);
+            let prev = 0; for (let k = 0; k < N; k++) { const w = Math.random() * 2 - 1; prev = prev * (soft ? 0.82 : 0.55) + w * (soft ? 0.18 : 0.45); ring[k] = prev; }
+            const decay = 0.996 - Math.max(0, midi - 60) * 0.0004;
+            for (let n = 0, p = 0; n < len; n++) { const a = ring[p], b = ring[(p + 1) % N], v = decay * 0.5 * (a + b); d[n] = a; ring[p] = v; p = (p + 1) % N; }
+            buf = ac.createBuffer(1, len, sr); buf.copyToChannel ? buf.copyToChannel(d, 0) : buf.getChannelData(0).set(d); cache[midi] = buf;
+          }
+          const src = ac.createBufferSource(); src.buffer = buf;
+          const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = Math.min(5200, hz * 7); lp.Q.value = 0.3;
+          out.gain.setValueAtTime(0.55, t); out.gain.setTargetAtTime(0, t + 1.4, 0.25);
+          if (soft) {
+            // G 柔撥弦：用指腹撥的感覺——音頭慢 8ms、高音更少、音尾稍短。
+            lp.frequency.value = Math.min(2200, hz * 3.2);
+            out.gain.setValueAtTime(0.0001, t); out.gain.exponentialRampToValueAtTime(0.75, t + 0.008); out.gain.setTargetAtTime(0, t + 1.1, 0.3);
+          }
+          src.connect(lp);
+          if (kind === 'F') {
+            // 尼龍弦：再柔一點，加兩個琴身共鳴（約 110Hz、220Hz）。
+            lp.frequency.value = Math.min(3000, hz * 4.5);
+            const b1 = ac.createBiquadFilter(); b1.type = 'peaking'; b1.frequency.value = 110; b1.Q.value = 1.2; b1.gain.value = 6;
+            const b2 = ac.createBiquadFilter(); b2.type = 'peaking'; b2.frequency.value = 230; b2.Q.value = 1.4; b2.gain.value = 4;
+            lp.connect(b1); b1.connect(b2); b2.connect(out); out.gain.setValueAtTime(0.5, t);
+          } else lp.connect(out);
+          src.start(t); src.stop(t + 2.3);
+        } else {
+          const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = Math.min(4200, hz * 6); lp.connect(out);
+          out.gain.setValueAtTime(0.0001, t); out.gain.exponentialRampToValueAtTime(0.32, t + 0.006); out.gain.exponentialRampToValueAtTime(0.0001, t + 1.6);
+          [[1, 1, 1.6], [2, 0.18, 0.7], [3.01, 0.05, 0.35]].forEach(([m, g, dur]) => {
+            const o = ac.createOscillator(), og = ac.createGain(); o.type = 'sine'; o.frequency.value = hz * m;
+            og.gain.setValueAtTime(g, t); og.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+            o.connect(og); og.connect(lp); o.start(t); o.stop(t + 1.7);
+          });
+        }
+      } catch (e) {}
+    },
+    // 左下兩顆浮動按鈕蓋到畫面內容時，縮成精簡版（導覽＝只有大頭貼、訂閱＝信封＋「訂閱」）。用「完整尺寸」判斷，視窗放大不再蓋到時就恢復。
+    fabFit() {
+      const s = this.state;
+      if (!s.fabIn || s.tourOn || s.intro) return;
+      const els = [document.querySelector('button[title="使用導覽 Tour"]'), document.querySelector('a[title="訂閱弦吟 Subscribe"]')];
+      if (!els[0] || !els[1] || !els[0].offsetWidth) return;
+      const fw = this._fabW || (this._fabW = []);
+      const isContent = (e) => {
+        if (e === document.documentElement || e === document.body) return false;
+        if (e instanceof SVGElement || /^(BUTTON|A|INPUT|IMG|CANVAS|SELECT|TEXTAREA)$/.test(e.tagName)) return true;
+        if (e.getBoundingClientRect().width >= window.innerWidth * 0.9) return false;
+        const bg = getComputedStyle(e).backgroundColor;
+        if (bg && bg !== 'transparent' && !/rgba\(.*,\s*0\)$/.test(bg)) return true;
+        for (const n of e.childNodes) if (n.nodeType === 3 && n.textContent.trim()) return true;
+        return false;
+      };
+      // 寬容度：每顆按鈕取 6×3＝18 個點，被蓋到的點達 FAB_TOL（約三分之一）才縮小；邊緣內縮 6px，擦邊不算。
+      const FAB_TOL = 6;
+      let hit = false;
+      els.forEach((el, j) => {
+        if (hit) return;
+        const r = el.getBoundingClientRect();
+        if (!s.fabMini) fw[j] = r.width;
+        const w = fw[j] || r.width;
+        let n = 0;
+        for (let a = 0; a < 6; a++) for (let b = 0; b < 3; b++) {
+          const x = r.left + 6 + (w - 12) * a / 5, y = r.top + 6 + (r.height - 12) * b / 2;
+          if (document.elementsFromPoint(x, y).some(e => !els.some(f => f === e || f.contains(e)) && !(e.closest && e.closest('[data-tour-root]')) && isContent(e))) n++;
+        }
+        if (n >= FAB_TOL) hit = true;
+      });
+      if (hit !== !!s.fabMini) this.setState({ fabMini: hit });
+    },
+    fabMiniVals() {
+      const m = !!this.state.fabMini;
+      return { tourFabPad: m ? '0 4px' : '0 20px 0 4px', tourTxtDisp: m ? 'none' : 'inline', subFabPad: m ? '0 14px 0 12px' : '0 20px 0 16px', subMiniDisp: m ? 'inline' : 'none', subFullDisp: m ? 'none' : 'inline' };
     },
     tourGlow() {
       let seen = false; try { seen = localStorage.getItem('hy-tour-hinted') === '1'; } catch (e) {}
@@ -226,7 +331,7 @@ window.HY_FONTS_READY = (function () {
     },
     // 畫面關閉時：停掉所有計時器、移除快捷鍵、停止叮聲。
     shellCleanup() {
-      ['_spT', '_dingT', '_dingFade', '_tgT'].forEach(k => { if (this[k]) clearInterval(this[k]); this[k] = null; });
+      ['_spT', '_dingT', '_dingFade', '_tgT', '_fabFitI'].forEach(k => { if (this[k]) clearInterval(this[k]); this[k] = null; });
       ['_fabT', '_fabT2', '_envT', '_dingSndT', '_toastT', '_introT', '_bubT'].forEach(k => { if (this[k]) clearTimeout(this[k]); this[k] = null; });
       if (this._muteKey) { window.removeEventListener('keydown', this._muteKey, true); this._muteKey = null; }
       if (this._ding) { try { this._ding.pause(); } catch (e) {} }
