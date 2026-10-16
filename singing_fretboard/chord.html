@@ -50,6 +50,9 @@
     button { border-radius: var(--radius-sm); transition: box-shadow 150ms cubic-bezier(.2,.6,.2,1), color 150ms cubic-bezier(.2,.6,.2,1); }
     button:hover { box-shadow: inset 0 0 0 999px rgba(180,83,9,0.10); }
     button:active { transform: translateY(1px); }
+    body.hy-tab button:hover { box-shadow: none; }
+    body.hy-tab *:not(input):not(textarea):not([contenteditable="true"]) { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+    body.hy-tab { -webkit-tap-highlight-color: transparent; }
     button:disabled { opacity: 0.4; cursor: not-allowed; }
     select:hover, input:hover { border-color: var(--primary); }
     a { color: var(--link); text-decoration: none; }
@@ -90,7 +93,6 @@
       }
     })();
   </script>
-</helmet>
 
 <sc-if value="{{ intro }}" hint-placeholder-val="{{ false }}">
 <div data-hy-intro="1" onClick="{{ onSkipIntro }}" style="position: fixed; inset: 0; z-index: 1200; display: flex; align-items: center; justify-content: center; background: #FAF6EF; background-image: linear-gradient(rgba(43,35,24,0.085) 1px, transparent 1px), linear-gradient(90deg, rgba(43,35,24,0.085) 1px, transparent 1px), linear-gradient(rgba(43,35,24,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(43,35,24,0.04) 1px, transparent 1px); background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px; background-position: -1px -1px; cursor: default; animation: hyIntroVeil 5s cubic-bezier(.2,.6,.2,1) forwards;">
@@ -127,6 +129,12 @@
         </div>
       </div>
       <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
+        <sc-if value="{{ isTablet }}" hint-placeholder-val="{{ false }}">
+        <button type="button" title="多選 Multi-select" onClick="{{ onMultiMode }}" style="flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 5px; height: 32px; padding: 0 12px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; font-weight: 600; color: {{ multiFg }}; background: {{ multiBg }}; border: 1px solid {{ multiBc }}; border-radius: var(--radius-sm); cursor: pointer; touch-action: manipulation;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1"></rect><rect x="13" y="13" width="8" height="8" rx="1"></rect><path d="m14 5 2 2 4-4"></path></svg>
+          多選
+        </button>
+        </sc-if>
         <button type="button" title="上一步 Undo（⌘Z）" disabled="{{ noUndo }}" onClick="{{ onUndo }}" style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 32px; padding: 0; color: var(--ink); background: transparent; border: 1px solid var(--hairline); border-radius: var(--radius-sm); cursor: pointer; transition: background 150ms, color 150ms;" style-hover="background: var(--surface-bone);">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
         </button>
@@ -136,7 +144,7 @@
         <button type="button" title="檔案 File" onClick="{{ onToggleFileDlg }}" style="flex: none; display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px; white-space: nowrap; font-family: var(--font-ui); font-size: 13px; font-weight: 600; color: #FBEFD9; background: var(--primary-deep); border: 1px solid var(--primary-deep); border-radius: var(--radius-sm); cursor: pointer;">檔案</button>
       </div>
       <div style="display: none; align-items: center; gap: 10px;">
-        <button type="button" title="從常用和弦裡挑選加入" onClick="{{ onOpenLib }}" style="flex: none; display: none; align-items: center; gap: 5px; height: 32px; padding: 0 14px; white-space: nowrap; font-family: var(--font-ui); font-size: 13px; font-weight: 400; color: var(--ink); background: var(--surface-bone); border: 1px solid var(--border-strong); cursor: pointer;">和弦庫<span style="font-family: Barlow, sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mute);">Library</span></button>
+        <button type="button" title="從常用和弦裡挑選加入" onClick="{{ onOpenLib }}" style="flex: none; display: none; align-items: center; gap: 5px; height: 32px; padding: 0 14px; white-space: nowrap; font-family: var(--font-ui); font-size: 13px; font-weight: 500; color: var(--ink); background: var(--surface-bone); border: 1px solid var(--border-strong); cursor: pointer;">和弦庫<span style="font-family: Barlow, sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mute);">Library</span></button>
       </div>
     </div>
     <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -251,30 +259,30 @@
       <div style="display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 8px 10px; align-items: center;">
         <span style="font-family: var(--font-cjk); font-size: 12px; color: var(--mute);" title="左手指法 Fingering">左手指法</span>
         <div style="display: inline-flex; justify-self: start; gap: 2px; padding: 2px; background: var(--surface-card); border: 1px solid var(--border-strong); border-radius: var(--radius-sm);">
-            <button type="button" title="標出指法 Show fingering" onClick="{{ pageDotTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 400; color: {{ pageDotTg.fgOn }}; background: {{ pageDotTg.bgOn }}; border: none; border-radius: 2px; cursor: pointer;">開</button>
-            <button type="button" title="不標指法 Hide fingering" onClick="{{ pageDotTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 400; color: {{ pageDotTg.fgOff }}; background: {{ pageDotTg.bgOff }}; border: none; border-radius: 2px; cursor: pointer;">關</button>
+            <button type="button" title="標出指法 Show fingering" onClick="{{ pageDotTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 500; color: {{ pageDotTg.fgOn }}; background: {{ pageDotTg.bgOn }}; border: none; border-radius: 2px; cursor: pointer;">開</button>
+            <button type="button" title="不標指法 Hide fingering" onClick="{{ pageDotTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 500; color: {{ pageDotTg.fgOff }}; background: {{ pageDotTg.bgOff }}; border: none; border-radius: 2px; cursor: pointer;">關</button>
           </div>
         <span style="font-family: var(--font-cjk); font-size: 12px; color: var(--mute);" title="顯示根音 Root">顯示根音</span>
         <div style="display: inline-flex; justify-self: start; gap: 2px; padding: 2px; background: var(--surface-card); border: 1px solid var(--border-strong); border-radius: var(--radius-sm);">
-            <button type="button" title="標出根音 Show root" onClick="{{ pageRootTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 400; color: {{ pageRootTg.fgOn }}; background: {{ pageRootTg.bgOn }}; border: none; border-radius: 2px; cursor: pointer;">開</button>
-            <button type="button" title="不標根音 Hide root" onClick="{{ pageRootTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 400; color: {{ pageRootTg.fgOff }}; background: {{ pageRootTg.bgOff }}; border: none; border-radius: 2px; cursor: pointer;">關</button>
+            <button type="button" title="標出根音 Show root" onClick="{{ pageRootTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 500; color: {{ pageRootTg.fgOn }}; background: {{ pageRootTg.bgOn }}; border: none; border-radius: 2px; cursor: pointer;">開</button>
+            <button type="button" title="不標根音 Hide root" onClick="{{ pageRootTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 500; color: {{ pageRootTg.fgOff }}; background: {{ pageRootTg.bgOff }}; border: none; border-radius: 2px; cursor: pointer;">關</button>
           </div>
         <span style="font-family: var(--font-cjk); font-size: 12px; color: var(--mute);" title="音名級數 Labels">音名級數</span>
         <div style="display: inline-flex; flex-wrap: wrap; justify-self: start; gap: 2px; padding: 2px; background: var(--surface-card); border: 1px solid var(--border-strong); border-radius: var(--radius-sm);">
           <sc-for list="{{ pageSideBtns }}" as="l" hint-placeholder-count="3">
-            <button type="button" title="{{ l.tip }}" onClick="{{ l.on }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 400; color: {{ l.sfg }}; background: {{ l.sbg }}; border: none; border-radius: 2px; cursor: pointer;">{{ l.t }}</button>
+            <button type="button" title="{{ l.tip }}" onClick="{{ l.on }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 500; color: {{ l.sfg }}; background: {{ l.sbg }}; border: none; border-radius: 2px; cursor: pointer;">{{ l.t }}</button>
           </sc-for>
         </div>
         <span style="display: none; font-family: var(--font-cjk); font-size: 12px; color: var(--mute);">新和弦格數</span>
         <div style="display: none; gap: 4px;">
           <sc-for list="{{ defFretBtns }}" as="l" hint-placeholder-count="3">
-            <button type="button" onClick="{{ l.on }}" style="width: 48px; padding: 5px 0; font-family: Barlow, 'Noto Sans TC', sans-serif; font-size: 13px; line-height: 17px; font-weight: 400; color: {{ l.fg }}; background: {{ l.bg }}; border: 1px solid {{ l.bc }}; cursor: pointer;">{{ l.t }}</button>
+            <button type="button" onClick="{{ l.on }}" style="width: 48px; padding: 5px 0; font-family: Barlow, 'Noto Sans TC', sans-serif; font-size: 13px; line-height: 17px; font-weight: 500; color: {{ l.fg }}; background: {{ l.bg }}; border: 1px solid {{ l.bc }}; cursor: pointer;">{{ l.t }}</button>
           </sc-for>
         </div>
         <span style="display: none; font-family: var(--font-cjk); font-size: 12px; color: var(--mute);">音名拼法</span>
         <div style="display: none; gap: 4px;">
           <sc-for list="{{ spellBtns }}" as="l" hint-placeholder-count="2">
-            <button type="button" onClick="{{ l.on }}" style="padding: 5px 12px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 17px; font-weight: 400; color: {{ l.fg }}; background: {{ l.bg }}; border: 1px solid {{ l.bc }}; cursor: pointer;">{{ l.t }}</button>
+            <button type="button" onClick="{{ l.on }}" style="padding: 5px 12px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 17px; font-weight: 500; color: {{ l.fg }}; background: {{ l.bg }}; border: 1px solid {{ l.bc }}; cursor: pointer;">{{ l.t }}</button>
           </sc-for>
         </div>
       </div>
@@ -321,7 +329,7 @@
         </div>
       </div>
       <div style="flex: none; display: flex; gap: 8px; align-items: center;">
-        <sc-if value="{{ linkTabOn }}" hint-placeholder-val="{{ false }}"><span title="現在跟這個指板分頁連動" style="flex: none; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-cjk); font-size: 12px; color: var(--mute);">跟「{{ linkTabName }}」</span></sc-if>
+        <sc-if value="{{ linkTabOn }}" hint-placeholder-val="{{ false }}"><span title="現在跟這個指板分頁連動" style="flex: none; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-cjk); font-size: 12px; color: var(--mute);">調弦法與「{{ linkTabName }}」連動</span></sc-if>
         <sc-if value="{{ tunOwn }}" hint-placeholder-val="{{ false }}">
           <button type="button" title="{{ linkBtnTitle }}" onClick="{{ onTunLink }}" style="flex: none; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; box-sizing: border-box; padding: 0; color: var(--primary-deep); background: #FFFFFF; border: 1px solid var(--primary-deep); border-radius: 999px; cursor: pointer;" style-hover="background: #FBEFD9;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v5h5"></path></svg></button>
         </sc-if>
@@ -390,7 +398,7 @@
                 <div style="position: absolute; left: {{ d.x }}%; top: {{ d.y }}px; width: 28px; height: 28px; margin: -14px 0 0 -14px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 999px; background: {{ d.bg }}; border: 1.5px solid {{ d.bc }}; font-family: Barlow, sans-serif; font-size: 15px; font-weight: 600; line-height: 1; color: {{ d.fg }}; pointer-events: none; z-index: 4;">{{ d.t }}</div>
               </sc-for>
               <sc-for list="{{ c.cells }}" as="h" hint-placeholder-count="0">
-                <div onPointerDown="{{ h.md }}" onPointerEnter="{{ h.me }}" onContextMenu="{{ h.cm }}" style="position: absolute; left: {{ h.x }}%; width: {{ h.w }}%; top: {{ h.y }}px; height: 30px; cursor: pointer; z-index: 6;"></div>
+                <div data-cell="1" onPointerDown="{{ h.md }}" onPointerEnter="{{ h.me }}" onContextMenu="{{ h.cm }}" style="touch-action: {{ h.ta }}; position: absolute; left: {{ h.x }}%; width: {{ h.w }}%; top: {{ h.y }}px; height: 30px; cursor: pointer; z-index: 6;"></div>
               </sc-for>
             </div>
             <div data-side="1" style="position: relative; width: 40px; height: 180px; flex: none;">
@@ -427,7 +435,7 @@
         </div>
       </sc-for>
       <button title="新增和弦 Add chord" type="button" data-add-chord="1" onClick="{{ onAddBlank }}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; width: 258px; min-height: 250px; margin-top: 12px; padding: 0; font-family: var(--font-cjk); font-size: 18px; font-weight: 600; color: var(--mute); background: transparent; border: 1px dashed var(--border-strong); border-radius: var(--radius-sm); cursor: pointer;">
-        <span style="font-family: Barlow, sans-serif; font-size: 36px; font-weight: 400; line-height: 1;">+</span>
+        <span style="font-family: Barlow, sans-serif; font-size: 36px; font-weight: 500; line-height: 1;">+</span>
         新增和弦
       </button>
     </div>
@@ -439,7 +447,7 @@
 </div>
 
 <sc-if value="{{ popOpen }}" hint-placeholder-val="{{ false }}">
-  <div ref="{{ popRef }}" style="position: fixed; left: {{ pop.x }}px; top: {{ pop.y }}px; visibility: {{ pop.vis }}; z-index: 30; width: 340px; max-width: calc(100vw - 24px); max-height: calc(100vh - 24px); overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px 16px; background: var(--surface-card); border: 1px solid var(--hairline); border-radius: var(--radius-sm); box-shadow: var(--shadow-lg);">
+  <div ref="{{ popRef }}" onPointerDown="{{ onPopDown }}" style="cursor: grab; position: fixed; left: {{ pop.x }}px; top: {{ pop.y }}px; visibility: {{ pop.vis }}; z-index: 30; width: 340px; max-width: calc(100vw - 24px); max-height: calc(100vh - 24px); overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px 16px; background: rgba(255, 255, 255, 0.85); border: 1px solid var(--hairline); border-radius: var(--radius-sm); box-shadow: var(--shadow-lg);">
     <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
       <span style="display: flex; align-items: baseline; gap: 8px; font-family: var(--font-cjk); font-size: 16px; font-weight: 700; letter-spacing: var(--tracking-cjk-title); color: var(--ink);" title="編輯和弦 Edit Chord">編輯和弦</span>
       <button type="button" title="關閉 Close（Esc）" onClick="{{ onClosePop }}" style="padding: 2px 6px; font-family: Barlow, sans-serif; font-size: 16px; line-height: 1; color: var(--mute); background: transparent; border: none; cursor: pointer;">×</button>
@@ -448,25 +456,25 @@
         <div style="display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px 10px; align-items: center;">
           <span style="font-family: var(--font-cjk); font-size: 12px; color: var(--mute);" title="左手指法 Fingering">左手指法</span>
           <div style="display: inline-flex; justify-self: start; gap: 2px; padding: 2px; background: var(--surface-card); border: 1px solid var(--border-strong); border-radius: var(--radius-sm);">
-            <button type="button" title="標出指法 Show fingering" onClick="{{ multiDotTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 400; color: {{ multiDotTg.fgOn }}; background: {{ multiDotTg.bgOn }}; border: none; border-radius: 2px; cursor: pointer;">開</button>
-            <button type="button" title="不標指法 Hide fingering" onClick="{{ multiDotTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 400; color: {{ multiDotTg.fgOff }}; background: {{ multiDotTg.bgOff }}; border: none; border-radius: 2px; cursor: pointer;">關</button>
+            <button type="button" title="標出指法 Show fingering" onClick="{{ multiDotTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 500; color: {{ multiDotTg.fgOn }}; background: {{ multiDotTg.bgOn }}; border: none; border-radius: 2px; cursor: pointer;">開</button>
+            <button type="button" title="不標指法 Hide fingering" onClick="{{ multiDotTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 500; color: {{ multiDotTg.fgOff }}; background: {{ multiDotTg.bgOff }}; border: none; border-radius: 2px; cursor: pointer;">關</button>
           </div>
           <span style="font-family: var(--font-cjk); font-size: 12px; color: var(--mute);" title="顯示根音 Root">顯示根音</span>
           <div style="display: inline-flex; justify-self: start; gap: 2px; padding: 2px; background: var(--surface-card); border: 1px solid var(--border-strong); border-radius: var(--radius-sm);">
-            <button type="button" title="標出根音 Show root" onClick="{{ multiRootTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 400; color: {{ multiRootTg.fgOn }}; background: {{ multiRootTg.bgOn }}; border: none; border-radius: 2px; cursor: pointer;">開</button>
-            <button type="button" title="不標根音 Hide root" onClick="{{ multiRootTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 400; color: {{ multiRootTg.fgOff }}; background: {{ multiRootTg.bgOff }}; border: none; border-radius: 2px; cursor: pointer;">關</button>
+            <button type="button" title="標出根音 Show root" onClick="{{ multiRootTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 500; color: {{ multiRootTg.fgOn }}; background: {{ multiRootTg.bgOn }}; border: none; border-radius: 2px; cursor: pointer;">開</button>
+            <button type="button" title="不標根音 Hide root" onClick="{{ multiRootTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 500; color: {{ multiRootTg.fgOff }}; background: {{ multiRootTg.bgOff }}; border: none; border-radius: 2px; cursor: pointer;">關</button>
           </div>
           <span style="font-family: var(--font-cjk); font-size: 12px; color: var(--mute);" title="音名級數 Labels">音名級數</span>
           <div style="display: inline-flex; flex-wrap: wrap; justify-self: start; gap: 2px; padding: 2px; background: var(--surface-card); border: 1px solid var(--border-strong); border-radius: var(--radius-sm);">
             <sc-for list="{{ multiSideBtns }}" as="l" hint-placeholder-count="3">
-              <button type="button" title="{{ l.tip }}" onClick="{{ l.on }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 400; color: {{ l.sfg }}; background: {{ l.sbg }}; border: none; border-radius: 2px; cursor: pointer;">{{ l.t }}</button>
+              <button type="button" title="{{ l.tip }}" onClick="{{ l.on }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 500; color: {{ l.sfg }}; background: {{ l.sbg }}; border: none; border-radius: 2px; cursor: pointer;">{{ l.t }}</button>
             </sc-for>
           </div>
         </div>
         <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
-          <button title="複製 Duplicate（⌘D）" type="button" onClick="{{ onBulkDup }}" style="padding: 6px 12px; font-family: var(--font-cjk); font-size: 13px; line-height: 17px; font-weight: 400; color: var(--ink); background: var(--surface-card); border: 1px solid var(--border-strong); cursor: pointer;">複製</button>
-          <button title="清空和弦 Clear chord" type="button" onClick="{{ onBulkClear }}" style="padding: 6px 12px; font-family: var(--font-cjk); font-size: 13px; line-height: 17px; font-weight: 400; color: var(--ink); background: var(--surface-card); border: 1px solid var(--border-strong); cursor: pointer;">清空和弦</button>
-          <button title="刪除 Delete" type="button" onClick="{{ onBulkDel }}" style="padding: 6px 12px; font-family: var(--font-cjk); font-size: 13px; line-height: 17px; font-weight: 400; color: #9A3412; background: var(--surface-card); border: 1px solid var(--border-strong); cursor: pointer;">刪除</button>
+          <button title="複製 Duplicate（⌘D）" type="button" onClick="{{ onBulkDup }}" style="padding: 6px 12px; font-family: var(--font-cjk); font-size: 13px; line-height: 17px; font-weight: 500; color: var(--ink); background: var(--surface-card); border: 1px solid var(--border-strong); cursor: pointer;">複製</button>
+          <button title="清空和弦 Clear chord" type="button" onClick="{{ onBulkClear }}" style="padding: 6px 12px; font-family: var(--font-cjk); font-size: 13px; line-height: 17px; font-weight: 500; color: var(--ink); background: var(--surface-card); border: 1px solid var(--border-strong); cursor: pointer;">清空和弦</button>
+          <button title="刪除 Delete" type="button" onClick="{{ onBulkDel }}" style="padding: 6px 12px; font-family: var(--font-cjk); font-size: 13px; line-height: 17px; font-weight: 500; color: #9A3412; background: var(--surface-card); border: 1px solid var(--border-strong); cursor: pointer;">刪除</button>
         </div>
         <span style="font-family: var(--font-cjk); font-size: 12px; line-height: 1.7; color: var(--mute);">{{ multiLabel }}</span>
       </sc-if>
@@ -495,7 +503,7 @@
             <button type="button" title="位置往下 Position down" onClick="{{ onStartDn }}" style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 28px; padding: 0; color: {{ startDnFg }}; background: transparent; border: none; border-right: 1px solid var(--hairline); border-radius: 0; cursor: {{ startDnCur }};">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M5 12h14"></path></svg>
             </button>
-            <span style="flex: 1; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; font-family: var(--font-ui); font-size: 13px; font-weight: 400; font-variant-numeric: tabular-nums; color: var(--ink);">{{ selStartLabel }}</span>
+            <span style="flex: 1; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; font-family: var(--font-ui); font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--ink);">{{ selStartLabel }}</span>
             <button type="button" title="位置往上 Position up" onClick="{{ onStartUp }}" style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 28px; padding: 0; color: var(--mute); background: transparent; border: none; border-left: 1px solid var(--hairline); border-radius: 0; cursor: pointer;">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
             </button>
@@ -503,30 +511,30 @@
           <span style="font-family: var(--font-cjk); font-size: 12px; color: var(--mute);" title="格數 Frets">格數</span>
           <div style="display: inline-flex; justify-self: start; gap: 2px; padding: 2px; background: var(--surface-card); border: 1px solid var(--border-strong); border-radius: var(--radius-sm);">
             <sc-for list="{{ selFretBtns }}" as="l" hint-placeholder-count="3">
-              <button type="button" title="{{ l.tip }}" onClick="{{ l.on }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 400; color: {{ l.sfg }}; background: {{ l.sbg }}; border: none; border-radius: 2px; cursor: pointer;">{{ l.t }}</button>
+              <button type="button" title="{{ l.tip }}" onClick="{{ l.on }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 500; color: {{ l.sfg }}; background: {{ l.sbg }}; border: none; border-radius: 2px; cursor: pointer;">{{ l.t }}</button>
             </sc-for>
           </div>
           <span style="font-family: var(--font-cjk); font-size: 12px; color: var(--mute);" title="左手指法 Fingering">左手指法</span>
           <div style="display: inline-flex; justify-self: start; gap: 2px; padding: 2px; background: var(--surface-card); border: 1px solid var(--border-strong); border-radius: var(--radius-sm);">
-            <button type="button" title="標出指法 Show fingering" onClick="{{ selDotTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 400; color: {{ selDotTg.fgOn }}; background: {{ selDotTg.bgOn }}; border: none; border-radius: 2px; cursor: pointer;">開</button>
-            <button type="button" title="不標指法 Hide fingering" onClick="{{ selDotTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 400; color: {{ selDotTg.fgOff }}; background: {{ selDotTg.bgOff }}; border: none; border-radius: 2px; cursor: pointer;">關</button>
+            <button type="button" title="標出指法 Show fingering" onClick="{{ selDotTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 500; color: {{ selDotTg.fgOn }}; background: {{ selDotTg.bgOn }}; border: none; border-radius: 2px; cursor: pointer;">開</button>
+            <button type="button" title="不標指法 Hide fingering" onClick="{{ selDotTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 500; color: {{ selDotTg.fgOff }}; background: {{ selDotTg.bgOff }}; border: none; border-radius: 2px; cursor: pointer;">關</button>
           </div>
           <span style="font-family: var(--font-cjk); font-size: 12px; color: var(--mute);" title="顯示根音 Root">顯示根音</span>
           <div style="display: inline-flex; justify-self: start; gap: 2px; padding: 2px; background: var(--surface-card); border: 1px solid var(--border-strong); border-radius: var(--radius-sm);">
-            <button type="button" title="標出根音 Show root" onClick="{{ selRootTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 400; color: {{ selRootTg.fgOn }}; background: {{ selRootTg.bgOn }}; border: none; border-radius: 2px; cursor: pointer;">開</button>
-            <button type="button" title="不標根音 Hide root" onClick="{{ selRootTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 400; color: {{ selRootTg.fgOff }}; background: {{ selRootTg.bgOff }}; border: none; border-radius: 2px; cursor: pointer;">關</button>
+            <button type="button" title="標出根音 Show root" onClick="{{ selRootTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 500; color: {{ selRootTg.fgOn }}; background: {{ selRootTg.bgOn }}; border: none; border-radius: 2px; cursor: pointer;">開</button>
+            <button type="button" title="不標根音 Hide root" onClick="{{ selRootTg.tog }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 500; color: {{ selRootTg.fgOff }}; background: {{ selRootTg.bgOff }}; border: none; border-radius: 2px; cursor: pointer;">關</button>
           </div>
           <span style="font-family: var(--font-cjk); font-size: 12px; color: var(--mute);" title="音名級數 Labels">音名級數</span>
           <div style="display: inline-flex; flex-wrap: wrap; justify-self: start; gap: 2px; padding: 2px; background: var(--surface-card); border: 1px solid var(--border-strong); border-radius: var(--radius-sm);">
             <sc-for list="{{ selSideBtns }}" as="l" hint-placeholder-count="4">
-              <button type="button" title="{{ l.tip }}" onClick="{{ l.on }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 400; color: {{ l.sfg }}; background: {{ l.sbg }}; border: none; border-radius: 2px; cursor: pointer;">{{ l.t }}</button>
+              <button type="button" title="{{ l.tip }}" onClick="{{ l.on }}" style="padding: 5px 9px; white-space: nowrap; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 500; color: {{ l.sfg }}; background: {{ l.sbg }}; border: none; border-radius: 2px; cursor: pointer;">{{ l.t }}</button>
             </sc-for>
           </div>
         </div>
         <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
-          <button title="複製 Duplicate（⌘D）" type="button" onClick="{{ onDup }}" style="padding: 5px 12px; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 400; color: var(--ink); background: var(--surface-bone); border: 1px solid var(--hairline); border-radius: var(--radius-sm); cursor: pointer;">複製</button>
-          <button title="清空和弦 Clear chord" type="button" onClick="{{ onClearSel }}" style="padding: 5px 12px; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 400; color: var(--ink); background: var(--surface-bone); border: 1px solid var(--hairline); border-radius: var(--radius-sm); cursor: pointer;">清空和弦</button>
-          <button title="刪除 Delete" type="button" onClick="{{ onDelSel }}" style="padding: 5px 12px; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 400; color: #9A3412; background: var(--surface-bone); border: 1px solid var(--hairline); border-radius: var(--radius-sm); cursor: pointer;">刪除</button>
+          <button title="複製 Duplicate（⌘D）" type="button" onClick="{{ onDup }}" style="padding: 5px 12px; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 500; color: var(--ink); background: var(--surface-bone); border: 1px solid var(--hairline); border-radius: var(--radius-sm); cursor: pointer;">複製</button>
+          <button title="清空和弦 Clear chord" type="button" onClick="{{ onClearSel }}" style="padding: 5px 12px; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 500; color: var(--ink); background: var(--surface-bone); border: 1px solid var(--hairline); border-radius: var(--radius-sm); cursor: pointer;">清空和弦</button>
+          <button title="刪除 Delete" type="button" onClick="{{ onDelSel }}" style="padding: 5px 12px; font-family: var(--font-cjk); font-size: 13px; line-height: 1.3; font-weight: 500; color: #9A3412; background: var(--surface-bone); border: 1px solid var(--hairline); border-radius: var(--radius-sm); cursor: pointer;">刪除</button>
         </div>
       </sc-if>
   </div>
@@ -534,7 +542,7 @@
 
 <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
   <div onPointerDown="{{ onCloseMenu }}" onContextMenu="{{ onCloseMenuCtx }}" style="position: fixed; inset: 0; z-index: 90;"></div>
-  <div style="position: fixed; left: {{ menu.x }}px; top: {{ menu.y }}px; z-index: 91; display: flex; flex-direction: column; gap: 8px; width: 232px; padding: 10px; box-sizing: border-box; background: var(--surface-card); border: 1px solid var(--hairline); border-radius: var(--radius-sm); box-shadow: var(--shadow-lg);">
+  <div style="position: fixed; left: {{ menu.x }}px; top: {{ menu.y }}px; z-index: 91; display: flex; flex-direction: column; gap: 8px; width: 232px; padding: 10px; box-sizing: border-box; background: rgba(255, 255, 255, 0.85); border: 1px solid var(--hairline); border-radius: var(--radius-sm); box-shadow: var(--shadow-lg);">
     <span style="font-family: var(--font-cjk); font-size: 12px; color: var(--mute);" title="指法 Finger">指法</span>
     <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px;">
       <sc-for list="{{ fingerBtns }}" as="f" hint-placeholder-count="5">
@@ -542,8 +550,8 @@
       </sc-for>
     </div>
     <div style="display: flex; gap: 4px;">
-      <button title="清除指法 Clear finger" type="button" onClick="{{ onFingerClear }}" style="flex: none; padding: 6px 10px; white-space: nowrap; font-family: var(--font-ui); font-size: 13px; font-weight: 400; color: var(--ink); background: var(--surface-bone); border: 1px solid var(--hairline); cursor: pointer;">清除指法</button>
-      <button title="標示音名級數 Show note / degree" type="button" onClick="{{ onToggleLab }}" style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; padding: 6px 8px; white-space: nowrap; text-align: left; font-family: var(--font-ui); font-size: 13px; font-weight: 400; color: {{ labBtn.fg }}; background: {{ labBtn.bg }}; border: 1px solid {{ labBtn.bc }}; cursor: pointer;">
+      <button title="清除指法 Clear finger" type="button" onClick="{{ onFingerClear }}" style="flex: none; padding: 6px 10px; white-space: nowrap; font-family: var(--font-ui); font-size: 13px; font-weight: 500; color: var(--ink); background: var(--surface-bone); border: 1px solid var(--hairline); cursor: pointer;">清除指法</button>
+      <button title="標示音名級數 Show note / degree" type="button" onClick="{{ onToggleLab }}" style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; padding: 6px 8px; white-space: nowrap; text-align: left; font-family: var(--font-ui); font-size: 13px; font-weight: 500; color: {{ labBtn.fg }}; background: {{ labBtn.bg }}; border: 1px solid {{ labBtn.bc }}; cursor: pointer;">
         <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 3px; border: 1px solid currentColor; font-family: Barlow, sans-serif; font-size: 10px; line-height: 1;">{{ labMark }}</span>
         標示音名級數
       </button>
@@ -610,21 +618,21 @@
     </div>
     <button title="匯出圖片 Export（⌘E）" type="button" onClick="{{ onDlgExport }}" style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 10px 12px; text-align: left; font-family: var(--font-cjk); font-size: 13px; font-weight: 600; color: #FBEFD9; background: var(--primary-deep); border: 1px solid var(--primary-deep); border-radius: var(--radius-sm); cursor: pointer;">
       匯出圖片
-      <span style="font-family: Barlow, sans-serif; font-size: 11px; font-weight: 400; opacity: 0.8;">⌘E</span>
+      <span style="font-family: Barlow, sans-serif; font-size: 11px; font-weight: 500; opacity: 0.8;">⌘E</span>
     </button>
     <span style="font-family: var(--font-cjk); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: var(--mute);" title="專案檔（.json） Project file">專案檔（.json）</span>
     <div style="display: flex; flex-direction: column; gap: 6px;">
       <button title="儲存 Save" type="button" onClick="{{ onDlgFileSave }}" style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 10px 12px; text-align: left; font-family: var(--font-cjk); font-size: 13px; font-weight: 600; color: #FBEFD9; background: var(--primary-deep); border: 1px solid var(--primary-deep); border-radius: var(--radius-sm); cursor: pointer;">
         儲存
-        <span style="font-family: Barlow, sans-serif; font-size: 11px; font-weight: 400; opacity: 0.8;">⌘S</span>
+        <span style="font-family: Barlow, sans-serif; font-size: 11px; font-weight: 500; opacity: 0.8;">⌘S</span>
       </button>
       <button title="另存新檔 Save as" type="button" onClick="{{ onDlgFileSaveAs }}" style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 10px 12px; text-align: left; font-family: var(--font-cjk); font-size: 13px; font-weight: 600; color: var(--ink); background: var(--surface-bone); border: 1px solid var(--hairline); border-radius: var(--radius-sm); cursor: pointer;">
         另存新檔
-        <span style="font-family: Barlow, sans-serif; font-size: 11px; font-weight: 400; color: var(--mute);">⇧⌘S</span>
+        <span style="font-family: Barlow, sans-serif; font-size: 11px; font-weight: 500; color: var(--mute);">⇧⌘S</span>
       </button>
       <button title="開啟 Open" type="button" onClick="{{ onDlgFileOpen }}" style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 10px 12px; text-align: left; font-family: var(--font-cjk); font-size: 13px; font-weight: 600; color: var(--ink); background: var(--surface-bone); border: 1px solid var(--hairline); border-radius: var(--radius-sm); cursor: pointer;">
         開啟…
-        <span style="font-family: Barlow, sans-serif; font-size: 11px; font-weight: 400; color: var(--mute);">⌘O</span>
+        <span style="font-family: Barlow, sans-serif; font-size: 11px; font-weight: 500; color: var(--mute);">⌘O</span>
       </button>
       <button title="開新專案 New project" type="button" onClick="{{ onDlgFileNew }}" style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 10px 12px; text-align: left; font-family: var(--font-cjk); font-size: 13px; font-weight: 600; color: var(--ink); background: var(--surface-bone); border: 1px solid var(--hairline); border-radius: var(--radius-sm); cursor: pointer;">
         開新專案
@@ -672,34 +680,34 @@
     <span style="font-family: var(--font-cjk); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: var(--mute);" title="檔案格式 Format">檔案格式</span>
     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
       <sc-for list="{{ fmtBtns }}" as="b" hint-placeholder-count="3">
-        <button type="button" onClick="{{ b.on }}" style="padding: 8px 0; font-family: var(--font-ui); font-size: 13px; font-weight: 400; color: {{ b.fg }}; background: {{ b.bg }}; border: 1px solid {{ b.bc }}; border-radius: var(--radius-sm); cursor: pointer;">{{ b.t }}</button>
+        <button type="button" onClick="{{ b.on }}" style="padding: 8px 0; font-family: var(--font-ui); font-size: 13px; font-weight: 500; color: {{ b.fg }}; background: {{ b.bg }}; border: 1px solid {{ b.bc }}; border-radius: var(--radius-sm); cursor: pointer;">{{ b.t }}</button>
       </sc-for>
     </div>
     <span style="font-family: var(--font-cjk); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: var(--mute); margin-top: 2px;" title="尺寸 Size">尺寸</span>
     <div style="display: flex; flex-direction: column; gap: 6px;">
       <sc-for list="{{ sizeBtns }}" as="b" hint-placeholder-count="3">
-        <button type="button" onClick="{{ b.on }}" style="display: flex; align-items: baseline; gap: 8px; padding: 8px 11px; font-family: var(--font-ui); font-size: 13px; font-weight: 400; text-align: left; color: {{ b.fg }}; background: {{ b.bg }}; border: 1px solid {{ b.bc }}; border-radius: var(--radius-sm); cursor: pointer;">
+        <button type="button" onClick="{{ b.on }}" style="display: flex; align-items: baseline; gap: 8px; padding: 8px 11px; font-family: var(--font-ui); font-size: 13px; font-weight: 500; text-align: left; color: {{ b.fg }}; background: {{ b.bg }}; border: 1px solid {{ b.bc }}; border-radius: var(--radius-sm); cursor: pointer;">
           <span style="font-family: Barlow, sans-serif;">{{ b.t }}</span>
-          <span style="font-size: 12px; font-weight: 400; opacity: 0.8;">{{ b.note }}</span>
+          <span style="font-size: 12px; font-weight: 500; opacity: 0.8;">{{ b.note }}</span>
         </button>
       </sc-for>
     </div>
     <span style="font-family: var(--font-cjk); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: var(--mute); margin-top: 2px;" title="背景 Background">背景</span>
-    <button title="去背 Transparent background" type="button" onClick="{{ onToggleTrans }}" style="display: flex; align-items: center; gap: 10px; padding: 9px 11px; text-align: left; font-family: var(--font-ui); font-size: 13px; font-weight: 400; color: {{ trans.fg }}; background: {{ trans.bg }}; border: 1px solid {{ trans.bc }}; border-radius: var(--radius-sm); cursor: pointer;">
+    <button title="去背 Transparent background" type="button" onClick="{{ onToggleTrans }}" style="display: flex; align-items: center; gap: 10px; padding: 9px 11px; text-align: left; font-family: var(--font-ui); font-size: 13px; font-weight: 500; color: {{ trans.fg }}; background: {{ trans.bg }}; border: 1px solid {{ trans.bc }}; border-radius: var(--radius-sm); cursor: pointer;">
       <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 3px; border: 1px solid currentColor; font-family: Barlow, sans-serif; font-size: 11px; line-height: 1;">{{ transMark }}</span>
       去背（背景透明）
-      <span style="font-size: 12px; font-weight: 400; opacity: 0.8;">僅 PNG</span>
+      <span style="font-size: 12px; font-weight: 500; opacity: 0.8;">僅 PNG</span>
     </button>
     <span style="font-family: var(--font-cjk); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: var(--mute); margin-top: 2px;" title="排版 Layout">排版</span>
     <div style="display: flex; align-items: center; gap: 8px;">
       <span style="font-family: var(--font-cjk); font-size: 12px; color: var(--mute);" title="一排 Per row">一排</span>
       <div style="display: flex; gap: 6px;">
         <sc-for list="{{ colBtns }}" as="b" hint-placeholder-count="3">
-          <button type="button" title="{{ b.tip }}" onClick="{{ b.on }}" style="width: 52px; padding: 7px 0; font-family: var(--font-ui); font-size: 13px; font-weight: 400; color: {{ b.fg }}; background: {{ b.bg }}; border: 1px solid {{ b.bc }}; border-radius: var(--radius-sm); cursor: pointer;">{{ b.t }}</button>
+          <button type="button" title="{{ b.tip }}" onClick="{{ b.on }}" style="width: 52px; padding: 7px 0; font-family: var(--font-ui); font-size: 13px; font-weight: 500; color: {{ b.fg }}; background: {{ b.bg }}; border: 1px solid {{ b.bc }}; border-radius: var(--radius-sm); cursor: pointer;">{{ b.t }}</button>
         </sc-for>
       </div>
     </div>
-    <button title="印出註解 Include notes" type="button" onClick="{{ onToggleNotes }}" style="display: flex; align-items: center; gap: 10px; padding: 9px 11px; text-align: left; font-family: var(--font-ui); font-size: 13px; font-weight: 400; color: {{ notesBtn.fg }}; background: {{ notesBtn.bg }}; border: 1px solid {{ notesBtn.bc }}; border-radius: var(--radius-sm); cursor: pointer;">
+    <button title="印出註解 Include notes" type="button" onClick="{{ onToggleNotes }}" style="display: flex; align-items: center; gap: 10px; padding: 9px 11px; text-align: left; font-family: var(--font-ui); font-size: 13px; font-weight: 500; color: {{ notesBtn.fg }}; background: {{ notesBtn.bg }}; border: 1px solid {{ notesBtn.bc }}; border-radius: var(--radius-sm); cursor: pointer;">
       <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 3px; border: 1px solid currentColor; font-family: Barlow, sans-serif; font-size: 11px; line-height: 1;">{{ notesMark }}</span>
       印出註解
     </button>
@@ -983,6 +991,7 @@ class Component extends DCLogic {
     if (prev) HYL.write(HYL.KEYS.chordPrev, null);
     this.state = {
       intro: (() => { try { return sessionStorage.getItem('hy-intro-seen') !== '1'; } catch (e) { return true; } })(),
+      isTablet: false, multiMode: false, dragIds: null,
       doc: HYL.respellDoc(doc && Array.isArray(doc.chords) ? doc : demoDoc(), LINK.spelling),
       past: prev && Array.isArray(prev.chords) ? [HYL.respellDoc(migrateDoc(prev), LINK.spelling)] : [], future: [], newAsk: false, selIds: [], autoIds: {}, sugOpen: {}, nameEditing: null, mq: null, drag: null, menu: null, cardMenu: null, dragCard: null, dropT: null,
       pop: null, zoom: 1, cols: 4, fileDlgOpen: false, fileMsg: '', exportOpen: false, lkQ: '', lkI: 0,
@@ -1035,8 +1044,13 @@ class Component extends DCLogic {
       closeDlg: () => { if (this.state.preview) this.closePreview(); this.setState({ fileDlgOpen: false, exportOpen: false, confirm: null, newAsk: false }); },
     };
     // 手機還沒有和弦介面：手機打開和弦頁時直接轉回指板。
-    try { if (Math.min(window.innerWidth, window.innerHeight) <= 500 && window.matchMedia('(hover: none)').matches) { location.replace('index.html'); return; } } catch (e) {}
-    this._up = () => { this.endDrag(); this.endMarquee(); };
+    // 2026-10-16 v3.2.0：裝置判斷看觸控，不看視窗大小（電腦永遠是網頁版）。
+    try { if (this.devKind().phone) { location.replace('index.html'); return; } } catch (e) {}
+    this.setState({ isTablet: this.devKind().tab });
+    // 平板：長按拖移和弦時擋住頁面捲動。
+    this._tm = (e) => { if (this._rd && this._rd.live) e.preventDefault(); };
+    window.addEventListener('touchmove', this._tm, { passive: false });
+    this._up = () => { if (this._dotLP) { clearTimeout(this._dotLP); this._dotLP = null; } this.endDrag(); this.endMarquee(); };
     this._mv = (e) => this.moveMarquee(e);
     this._key = (e) => this.onKey(e);
     window.addEventListener('pointermove', this._mv);
@@ -1087,6 +1101,8 @@ class Component extends DCLogic {
     clearTimeout(this._flashT); clearTimeout(this._introT); clearTimeout(this._tt); clearTimeout(this._pvT); this.holdEnd();
     if (this._rd) this.finishReorder(false);
     if (this._rz) window.removeEventListener('resize', this._rz);
+    if (this._tm) window.removeEventListener('touchmove', this._tm);
+    if (this._lp) this._lp.off();
     window.removeEventListener('pointermove', this._mv);
     window.removeEventListener('pointerup', this._up);
     window.removeEventListener('pointercancel', this._up);
@@ -1125,6 +1141,8 @@ class Component extends DCLogic {
     if (!auto) this.setState(s => ({ autoIds: { ...s.autoIds, [id]: true } }));
   }
   componentDidUpdate(pp, ps) {
+    if (pp && pp.forceDevice !== this.props.forceDevice) { const t = this.devKind().tab; if (t !== this.state.isTablet) this.setState({ isTablet: t, multiMode: false }); }
+    if (document.body.classList.contains('hy-tab') !== !!this.state.isTablet) document.body.classList.toggle('hy-tab', !!this.state.isTablet);
     const settled = Date.now() - (this._mountAt || 0) > 3000;
     if (settled && pp && pp.replayHints !== undefined && pp.replayHints !== this.props.replayHints) this.replayHints();
     if (settled && pp && pp.testDing !== undefined && pp.testDing !== this.props.testDing) this.envShake(true, true);
@@ -1147,9 +1165,26 @@ class Component extends DCLogic {
     if (k !== this._lastEx) { this._lastEx = k; saveJSON('export', ex); }
     this.placePop();
   }
+  // 2026-10-16：編輯和弦視窗按住空白處可以拖開（只記這次，關掉或換選別的和弦就回原位）。
+  startPopDrag(e) {
+    const t = e.target, p = this.state.pop;
+    if (e.button !== 0 || !p || (t.closest && t.closest('button,input,select,textarea,label,a,[contenteditable="true"]'))) return;
+    e.preventDefault();
+    const o = this.state.popOff && this.state.popOff.id === p.id ? this.state.popOff : { dx: 0, dy: 0 };
+    const sx = e.clientX, sy = e.clientY, el = this.popRef.current, w = el ? el.offsetWidth : 340;
+    const mv = ev => {
+      const q = this.state.pop; if (!q) return;
+      let dx = o.dx + ev.clientX - sx, dy = o.dy + ev.clientY - sy;
+      dx = Math.max(-q.x - w + 60, Math.min(window.innerWidth - q.x - 60, dx));
+      dy = Math.max(-q.y, Math.min(window.innerHeight - q.y - 40, dy));
+      this.setState({ popOff: { id: q.id, dx, dy } });
+    };
+    const up = () => { window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); };
+    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+  }
   placePop() {
     const ids = this.state.selIds, el = this.popRef.current;
-    if (!ids.length || !el) { if (this.state.pop) this.setState({ pop: null }); return; }
+    if (!ids.length || !el) { if (this.state.pop || this.state.popOff) this.setState({ pop: null, popOff: null }); return; }
     const id = ids[ids.length - 1];
     const card = document.querySelector('[data-card="' + id + '"]');
     if (!card) return;
@@ -1261,6 +1296,51 @@ class Component extends DCLogic {
   }
   sideFont() { return SIDEFONTS[this.props.sideFont] || SIDEFONTS['Source Serif 襯線']; }
   nameFont() { return FONTS[this.props.nameFont] || FONTS['Barlow 半粗']; }
+  // Tweak「切換裝置畫面」＋觸控判斷（跟指板同一套；iPad Safari 會說自己是 Mac，所以不看裝置名稱）。
+  devKind() {
+    const v = this.props.forceDevice || 'auto';
+    const fd = { '自動': 'auto', '電腦': 'desktop', '平板': 'tablet', '手機': 'phone' }[v] || v;
+    let touch = false;
+    try { touch = (navigator.maxTouchPoints || 0) > 1 && !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); } catch (e) {}
+    const phone = fd === 'phone' || (fd === 'auto' && touch && Math.min(window.innerWidth, window.innerHeight) <= 500);
+    return { phone, tab: !phone && (fd === 'tablet' || (fd === 'auto' && touch)) };
+  }
+  // 平板手指按在和弦卡上：已選取的卡按住 0.3 秒＝拖移（多選時整組一起移）；多選模式下點一下＝加入／取消選取。
+  tabDown(e, cid, isSel, nSel) {
+    const st = this.state, t = e.target;
+    const onCell = !!(t && t.closest && t.closest('[data-cell],button,input,textarea,[data-drag-handle]'));
+    const card = e.currentTarget, x0 = e.clientX, y0 = e.clientY, pid = e.pointerId;
+    if (this._lp) this._lp.off();
+    const lp = { moved: false, fired: false };
+    const mv = ev => { if (ev.pointerId === pid && !lp.moved && Math.abs(ev.clientX - x0) + Math.abs(ev.clientY - y0) > 8) { lp.moved = true; clearTimeout(lp.t); } };
+    const up = ev => {
+      if (ev.pointerId !== pid) return;
+      lp.off();
+      if (ev.type !== 'pointerup' || lp.moved || lp.fired) return;
+      if (st.multiMode) { if (!onCell) this.setState(s => ({ selIds: s.selIds.includes(cid) ? s.selIds.filter(k => k !== cid) : s.selIds.concat([cid]) })); }
+      else if (isSel && nSel > 1) this.setState({ selIds: [cid] });
+    };
+    lp.off = () => { clearTimeout(lp.t); window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); if (this._lp === lp) this._lp = null; };
+    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+    this._lp = lp;
+    if (isSel && !onCell) lp.t = setTimeout(() => {
+      if (lp.moved || this._rd) return;
+      lp.fired = true;
+      const sel = this.state.selIds, ids = this.state.doc.chords.filter(c => sel.includes(c.id)).map(c => c.id);
+      this.startReorder({ button: 0, currentTarget: card, preventDefault() {}, clientX: x0, clientY: y0, pointerId: pid }, cid);
+      if (this._rd) { this._rd.ids = ids.length > 1 ? ids : null; this.beginReorder(this._rd); this.moveGhost(this._rd); }
+    }, 300);
+  }
+  moveGroup(ids, t) {
+    this.setDoc(d => {
+      const set = new Set(ids), moving = d.chords.filter(c => set.has(c.id)), rest = d.chords.filter(c => !set.has(c.id));
+      let j = rest.findIndex(c => c.id === t.id);
+      if (j < 0) return d;
+      if (t.side === 'after') j++;
+      rest.splice(j, 0, ...moving);
+      return { ...d, chords: rest };
+    });
+  }
 
   endDrag() {
     const d = this.drag;
@@ -1324,16 +1404,18 @@ class Component extends DCLogic {
     const t = e.target;
     if (t && t.closest && t.closest('[data-noq],[data-drag-handle],input,button,a,select,textarea')) return;
     const onCard = !!(t && t.closest && t.closest('[data-card]'));
+    // 平板手指不拉框（拖動＝捲動頁面），點空白處照樣取消選取。
+    const tch = this.state.isTablet && (e.pointerType === 'touch' || e.pointerType === 'pen');
     this._downT = Date.now(); this._mqLive = false;
-    e.preventDefault();
-    this.mq = { x0: e.clientX, y0: e.clientY, x1: e.clientX, y1: e.clientY, add: false, base: this.state.selIds.slice(), moved: false, onCard };
+    if (!tch) e.preventDefault();
+    this.mq = { x0: e.clientX, y0: e.clientY, x1: e.clientX, y1: e.clientY, add: false, base: this.state.selIds.slice(), moved: false, onCard, tch };
   }
   moveMarquee(e) {
     const m = this.mq;
     if (!m) return;
     m.x1 = e.clientX; m.y1 = e.clientY;
     if (!m.moved && Math.abs(m.x1 - m.x0) + Math.abs(m.y1 - m.y0) > 4) m.moved = true;
-    if (!m.moved) return;
+    if (!m.moved || m.tch) return;
     if (this.drag && !m.live) {
       const cardEl = document.querySelector('[data-card="' + this.drag.cid + '"]');
       const r = cardEl && cardEl.getBoundingClientRect();
@@ -1461,15 +1543,19 @@ class Component extends DCLogic {
     const types = [{ description: '弦吟專案檔', accept: { 'application/json': ['.json'] } }];
     if (window.showSaveFilePicker) {
       try {
-        let h = this._fh;
-        if (asNew || !h) { h = await window.showSaveFilePicker({ suggestedName: this.projectFileName(), types }); this._fh = h; }
+        let h = asNew ? null : this._fh;
+        if (!h && !asNew && !this._tourLive) h = await HYL.lastHandle();
+        if (!h) h = await window.showSaveFilePicker({ suggestedName: this.projectFileName(), types });
         const w = await h.createWritable();
         await w.write(text); await w.close();
+        this._fh = h; if (!this._tourLive) HYL.setHandle(h);
         this.markSaved();
         window.hyTrack && window.hyTrack('save_project', { method: asNew ? 'save_as' : 'save' }); this.setState({ fileMsg: '已儲存：' + h.name });
         return true;
       } catch (e) {
         if (e && (e.name === 'AbortError' || e.name === 'NotAllowedError')) return false;
+        if (e && e.name === 'SecurityError') { this.setState({ fileMsg: '請再按一次「儲存」。' }); return false; }
+        this._fh = null; HYL.setHandle(null);
       }
     }
     this.deliverBlob(new Blob([text], { type: 'application/json' }), this.projectFileName());
@@ -1495,7 +1581,7 @@ class Component extends DCLogic {
   }
   guard(act) {
     this.setState({ fileDlgOpen: false });
-    if (act === 'new' || this.isDirty()) this.setState({ confirm: { act } });
+    if (this.isDirty()) this.setState({ confirm: { act } });
     else this.doAct(act);
   }
   doAct(act) { if (act === 'open') this.openProject(); else this.newProject(); }
@@ -1503,15 +1589,18 @@ class Component extends DCLogic {
   pickNew(scope) {
     this._newScope = scope;
     this.setState({ newAsk: false });
-    if (scope === 'all' && HYL.readFb()) this.setState({ confirm: { act: 'new', all: true } });
+    const fbChanged = () => { try { return HYL.read(HYL.NS + 'fb-savedSig') !== JSON.stringify([HYL.readFb(), HYL.readChords()]); } catch (e) { return true; } };
+    if (scope === 'all' && HYL.readFb() && (this.isDirty() || fbChanged())) this.setState({ confirm: { act: 'new', all: true } });
     else this.guard('new');
   }
   newProject() {
     window.hyTrack && window.hyTrack('new_project');
     const all = this._newScope === 'all';
     if (all) { HYL.writeFb(null); readLink(); }
-    this.setDoc(d => HYL.respellDoc({ ...demoDoc(), dotMode: d.dotMode, sideMode: d.sideMode, spelling: d.spelling, defFrets: d.defFrets }, LINK.spelling));
-    this._fh = null;
+    // 2026-10-16：一起清空＝和弦頁設定也還原（含單獨調弦）；只清和弦＝設定照舊。
+    this.setDoc(d => HYL.respellDoc(all ? demoDoc() : { ...demoDoc(), dotMode: d.dotMode, sideMode: d.sideMode, rootMode: d.rootMode, tune: d.tune, spelling: d.spelling, defFrets: d.defFrets, chords: [blankChord(d.defFrets || 4)] }, LINK.spelling));
+    if (all) applyTune(null);
+    this._fh = null; if (!this._tourLive) HYL.setHandle(null);
     saveJSON('savedSig', null);
     this.setState({ selIds: [], savedSig: null, fileMsg: '' });
     this.toast(all ? '已開新專案，指板也清空了。和弦可以按「上一步」找回，指板沒辦法找回。' : '已開新專案（只清空和弦，指板沒有變）。要找回剛才的和弦可以按「上一步」。');
@@ -1570,7 +1659,7 @@ class Component extends DCLogic {
     Object.assign(rd, { o, k, dx: rd.x0 - r.left, dy: rd.y0 - r.top, sc: this.scrollBox(rd.card), cur: document.body.style.cursor });
     document.body.style.cursor = 'grabbing';
     this.dragCard = rd.cid;
-    this.setState({ dragCard: rd.cid, dropT: null, selIds: [] });
+    this.setState({ dragCard: rd.cid, dragIds: rd.ids || null, dropT: null, selIds: [] });
     const tick = () => { if (this._rd !== rd) return; this.autoScroll(rd); rd.raf = requestAnimationFrame(tick); };
     rd.raf = requestAnimationFrame(tick);
   }
@@ -1593,7 +1682,8 @@ class Component extends DCLogic {
     if (add && chords.length) test(add, '');
     let t = null;
     if (best) t = best.id ? { id: best.id, side: best.after ? 'after' : 'before' } : { id: chords[chords.length - 1].id, side: 'after' };
-    if (t) { const i = chords.findIndex(c => c.id === rd.cid), j = chords.findIndex(c => c.id === t.id), ins = t.side === 'after' ? j + 1 : j; if (i < 0 || j < 0 || ins === i || ins === i + 1) t = null; }
+    if (t && rd.ids) { if (rd.ids.includes(t.id)) t = null; }
+    else if (t) { const i = chords.findIndex(c => c.id === rd.cid), j = chords.findIndex(c => c.id === t.id), ins = t.side === 'after' ? j + 1 : j; if (i < 0 || j < 0 || ins === i || ins === i + 1) t = null; }
     rd.t = t;
     const cur = this.state.dropT;
     if ((cur ? cur.id + cur.side : '') !== (t ? t.id + t.side : '')) this.setState({ dropT: t });
@@ -1622,8 +1712,8 @@ class Component extends DCLogic {
     if (!rd.live) return;
     document.body.style.cursor = rd.cur || '';
     this.dragCard = null;
-    this.setState({ dragCard: null, dropT: null });
-    if (ok && rd.t) this.moveTo(rd.cid, rd.t);
+    this.setState({ dragCard: null, dragIds: null, dropT: null, ...(rd.ids ? { selIds: rd.ids } : {}) });
+    if (ok && rd.t) { if (rd.ids) this.moveGroup(rd.ids, rd.t); else this.moveTo(rd.cid, rd.t); }
   }
   moveTo(fromId, t) {
     this.setDoc(d => {
@@ -1656,7 +1746,7 @@ class Component extends DCLogic {
         const h = picked[0];
         const f = await h.getFile();
         const r = this.loadProjectJson(await f.text());
-        this._fh = h;
+        this._fh = h; if (!this._tourLive) HYL.setHandle(h);
         window.hyTrack && window.hyTrack('open_project'); this.setState({ fileMsg: this.openedMsg(r, h.name) });
         return;
       } catch (e) {
@@ -2016,9 +2106,21 @@ class Component extends DCLogic {
         const f = sf + col;
         cells.push({
           x: col / F * 100, w: 100 / F, y: Y(s) - SP / 2,
-          md: (e) => { if (e.button !== 0 || !isSel) return; e.preventDefault(); this.drag = { cid, s0: s, s1: s, f }; this.setState({ drag: { ...this.drag }, cardMenu: null }); },
-          me: () => { if (this.drag && this.drag.cid === cid && this.drag.s1 !== s) { this.drag.s1 = s; this.setState({ drag: { ...this.drag } }); } },
-          cm: (e) => { if (isSel && this.openMenu(cid, s, f, e.clientX, e.clientY)) { e.preventDefault(); e.stopPropagation(); } },
+          ta: st.isTablet && isSel && !st.multiMode ? 'none' : 'auto',
+          md: (e) => {
+            if (e.button !== 0 || !isSel || st.multiMode) return;
+            e.preventDefault();
+            // 平板：手指放開指標鎖定（才能滑過其他弦畫封閉和弦），長按圓點 0.45 秒＝指法小視窗。
+            if (st.isTablet && (e.pointerType === 'touch' || e.pointerType === 'pen')) {
+              try { e.target.releasePointerCapture(e.pointerId); } catch (er) {}
+              if (this._dotLP) clearTimeout(this._dotLP);
+              const x = e.clientX, y = e.clientY;
+              this._dotLP = setTimeout(() => { this._dotLP = null; const d = this.drag; if (!d || d.cid !== cid || d.s1 !== s) return; if (this.openMenu(cid, s, f, x, y)) { this.drag = null; this.setState({ drag: null }); } }, 450);
+            }
+            this.drag = { cid, s0: s, s1: s, f }; this.setState({ drag: { ...this.drag }, cardMenu: null });
+          },
+          me: () => { if (this.drag && this.drag.cid === cid && this.drag.s1 !== s) { if (this._dotLP) { clearTimeout(this._dotLP); this._dotLP = null; } this.drag.s1 = s; this.setState({ drag: { ...this.drag } }); } },
+          cm: (e) => { if (st.isTablet && Date.now() - (this._touchAt || 0) < 1200) { e.preventDefault(); return; } if (isSel && this.openMenu(cid, s, f, e.clientX, e.clientY)) { e.preventDefault(); e.stopPropagation(); } },
         });
       }
       return {
@@ -2026,13 +2128,18 @@ class Component extends DCLogic {
         side: md.side.map((a, s) => ({ top: Y(s) - SP / 2, items: a.map(it => ({ c: INKC, segs: segsOf(it.t) })) })),
         ringTr: cid === st.flashId || cid === st.fadeId ? 'box-shadow 700ms cubic-bezier(.2,.6,.2,1)' : 'none',
         ring: st.flashId === cid ? '0 0 0 1.5px var(--primary), 0 0 0 7px rgba(217,119,6,0.24)' : isSel ? '0 0 0 1.5px var(--primary)' : 'none',
-        op: st.dragCard === cid ? 0.4 : 1,
+        op: st.dragCard === cid || (st.dragIds && st.dragIds.includes(cid)) ? 0.4 : 1,
         onSel: (e) => {
           if (e.button !== 0) return;
           this._downSel = isSel;
+          if (st.isTablet && (e.pointerType === 'touch' || e.pointerType === 'pen')) {
+            this._touchAt = Date.now();
+            this.tabDown(e, cid, isSel, nSel);
+            if (st.multiMode || (isSel && nSel > 1)) return;
+          }
           if (!(isSel && nSel === 1)) this.setState({ selIds: [cid] });
         },
-        onCtx: (e) => { e.preventDefault(); this.setState({ selIds: isSel ? st.selIds : [cid] }); },
+        onCtx: (e) => { e.preventDefault(); if (st.isTablet && Date.now() - (this._touchAt || 0) < 1200) return; this.setState({ selIds: isSel ? st.selIds : [cid] }); },
         onHandleDown: (e) => this.startReorder(e, cid),
         dropL: !!st.dropT && st.dropT.id === cid && st.dropT.side === 'before', dropR: !!st.dropT && st.dropT.id === cid && st.dropT.side === 'after',
         wires, dots, barres, marks, cells, frLabel: md.frLabel, frX: X(md.frCol || 0),
@@ -2144,7 +2251,8 @@ class Component extends DCLogic {
       wrapMinW: this._tourLive ? 360 : 628,
       popOpen: nSel > 0, popRef: this.popRef,
       // 框選拖曳中不顯示編輯視窗，放開滑鼠才出現。
-      pop: st.pop && st.pop.id === st.selIds[nSel - 1] && !st.mq ? { x: st.pop.x, y: st.pop.y, vis: 'visible' } : { x: 0, y: 0, vis: 'hidden' },
+      pop: st.pop && st.pop.id === st.selIds[nSel - 1] && !st.mq ? (o => ({ x: st.pop.x + o.dx, y: st.pop.y + o.dy, vis: 'visible' }))(st.popOff && st.popOff.id === st.pop.id ? st.popOff : { dx: 0, dy: 0 }) : { x: 0, y: 0, vis: 'hidden' },
+      onPopDown: e => this.startPopDrag(e),
       onClosePop: () => this.setState({ selIds: [] }),
       mqOn: !!st.mq, mq: st.mq || { x: 0, y: 0, w: 0, h: 0 },
       noSel: nSel === 0, isMulti: nSel > 1,
@@ -2180,6 +2288,9 @@ class Component extends DCLogic {
       onAddBlank: () => this.addChord(blankChord(doc.defFrets), null),
       noUndo: !st.past.length, noRedo: !st.future.length,
       onUndo: () => this.undo(), onRedo: () => this.redo(),
+      isTablet: !!st.isTablet,
+      onMultiMode: () => this.setState(s => ({ multiMode: !s.multiMode, menu: null, cardMenu: null })),
+      multiFg: st.multiMode ? '#B45309' : 'var(--ink)', multiBg: st.multiMode ? 'rgba(217,119,6,0.12)' : 'transparent', multiBc: st.multiMode ? 'var(--primary-deep)' : 'var(--hairline)',
       hasSel: !!sel,
       sel: sel || { name: '', note: '' },
       selStartLabel: sel ? ('第 ' + sel.startFret + ' 格') : '',

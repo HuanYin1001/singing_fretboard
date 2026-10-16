@@ -154,7 +154,39 @@
     return ok ? out : null;
   }
 
+  // 記住上次開啟／儲存的專案檔（只有 Chrome／Edge 電腦版能用）。存在這台電腦瀏覽器的 IndexedDB，兩頁共用。
+  function hdb() {
+    return new Promise(function (ok, no) {
+      if (!root.indexedDB) return no(new Error('no idb'));
+      var r = root.indexedDB.open('hy-file', 1);
+      r.onupgradeneeded = function () { r.result.createObjectStore('h'); };
+      r.onsuccess = function () { ok(r.result); }; r.onerror = function () { no(r.error); };
+    });
+  }
+  function setHandle(h) {
+    return hdb().then(function (db) { return new Promise(function (ok) {
+      var t = db.transaction('h', 'readwrite'); if (h) t.objectStore('h').put(h, 'last'); else t.objectStore('h').delete('last');
+      t.oncomplete = t.onerror = function () { db.close(); ok(); };
+    }); }).catch(function () {});
+  }
+  function getHandle() {
+    return hdb().then(function (db) { return new Promise(function (ok) {
+      var q = db.transaction('h', 'readonly').objectStore('h').get('last');
+      q.onsuccess = function () { db.close(); ok(q.result || null); }; q.onerror = function () { db.close(); ok(null); };
+    }); }).catch(function () { return null; });
+  }
+  // 拿回上次的檔案並取得寫入權限（瀏覽器會問「允許編輯這個檔案嗎？」）；拿不到回傳 null。
+  function lastHandle() {
+    return getHandle().then(function (h) {
+      if (!h || !h.queryPermission) return null;
+      var o = { mode: 'readwrite' };
+      return h.queryPermission(o).then(function (p) { return p === 'granted' ? p : h.requestPermission(o); })
+        .then(function (p) { return p === 'granted' ? h : null; }).catch(function () { return null; });
+    });
+  }
+
   root.HYLINK = {
+    setHandle: setHandle, getHandle: getHandle, lastHandle: lastHandle,
     NS: NS, PROJ_V: PROJ_V, FB_SCHEMA_V: FB_SCHEMA_V, KEYS: KEYS, STD: STD, STD_NAME: STD_NAME,
     chordOpen: chordOpen, tuningLetters: tuningLetters, tuningName: tuningName, spellingOf: spellingOf,
     respellNote: respellNote, respellName: respellName, respellDoc: respellDoc, sig: sig, fileName: fileName, safeName: safeName,
