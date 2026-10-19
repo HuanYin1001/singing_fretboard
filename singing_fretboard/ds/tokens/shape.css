@@ -1,0 +1,24 @@
+:root{
+  /* Paper-first brand: radii stay small. Nothing is a pill except tags. */
+  --radius-xs:2px;
+  --radius-sm:4px;
+  --radius-md:8px;
+  --radius-lg:14px;
+  --radius-pill:999px;
+
+  --border-width:1px;
+  --border-width-thick:2px;
+  --rule-hairline:var(--border-width) solid var(--hairline);
+  --rule-on-dark:var(--border-width) solid var(--border-on-dark);
+
+  /* Shadows are warm-tinted and low; cards mostly rely on the hairline instead. */
+  --shadow-none:none;
+  --shadow-xs:0 1px 2px rgba(43,35,24,0.06);
+  --shadow-sm:0 2px 6px -1px rgba(43,35,24,0.08);
+  --shadow-md:0 10px 24px -10px rgba(43,35,24,0.16);
+  --shadow-lg:0 24px 56px -20px rgba(43,35,24,0.24);
+  --shadow-inset-warm:inset 0 1px 0 rgba(255,255,255,0.5);
+  --shadow-stage:0 32px 80px -32px rgba(0,0,0,0.7);
+
+  --focus-ring:0 0 0 3px var(--ring-focus);
+}

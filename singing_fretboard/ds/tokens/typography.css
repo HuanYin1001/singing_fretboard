@@ -1,0 +1,79 @@
+:root{
+  /* families — from uploads/fingerboard analysis.pptx's own slide masters: Barlow Condensed
+     for display, Barlow for UI/body, Noto Sans TC for Chinese in both roles. No serif, no kai —
+     this source is a clean teaching deck, not a literary/programme-note register.
+     COMBINED stacks below (Barlow first, Noto Sans TC fallback) are for ON-SCREEN use only —
+     browsers resolve per-glyph fallback correctly. PPTX export does NOT: it writes whatever
+     font-family string is computed into BOTH <a:latin> and <a:ea> for an entire run, so a run
+     styled with the combined stack gets tagged Barlow even where it's pure Chinese text —
+     opening it in PowerPoint and touching the text reflows it in PowerPoint's own CJK default.
+     Any deck/template meant for PPTX export MUST use the SINGLE-family tokens below
+     (--font-cjk / --font-latin / --font-latin-display) on separate spans per script —
+     never the combined --font-display/--font-ui/--font-kai/--font-mono stacks for slide text. */
+  --font-display:"Barlow Condensed","Noto Sans TC",sans-serif;   /* on-screen only — 標題、海報、大字級 */
+  --font-kai:"Barlow","Noto Sans TC",sans-serif;                 /* on-screen only — italic lede/quote register */
+  --font-ui:"Barlow","Noto Sans TC",system-ui,sans-serif;        /* on-screen only — 介面、按鈕、表單、說明 */
+  --font-mono:"Barlow","Noto Sans TC",sans-serif;                /* on-screen only — Capo / 弦數 / 拍號 / 時間碼 / 價格 */
+
+  /* SINGLE-family tokens — REQUIRED for any text in a deck/template that will be exported to
+     PPTX. Put Chinese runs in --font-cjk, Latin/number runs in --font-latin (or
+     --font-latin-display for the condensed headline face), each in its OWN span. Never mix
+     scripts inside one span when authoring for export. */
+  --font-cjk:"Noto Sans TC",sans-serif;
+  --font-latin:"Barlow",sans-serif;
+  --font-latin-display:"Barlow Condensed",sans-serif;
+
+  /* scale — 1rem = 16px. Recalibrated directly from slide1.xml's run sizes:
+     eyebrow/meta 16.5pt, CJK subtitle 22.5pt, lede 20.25pt, byline name 28.5pt, hero title 111pt —
+     read relative to the eyebrow as 1x, the hero title comes out to ~6.7x. */
+  --text-2xs:0.75rem;
+  --text-xs:0.8125rem;
+  --text-sm:0.9375rem;
+  --text-base:1rem;
+  --text-lg:1.25rem;
+  --text-xl:1.375rem;
+  --text-2xl:1.75rem;
+  --text-3xl:2.25rem;
+  --text-4xl:3rem;
+  --text-5xl:4rem;
+  --text-6xl:5.5rem;
+  --text-7xl:7rem;
+
+  --weight-light:300;
+  --weight-regular:400;
+  --weight-medium:500;
+  --weight-semibold:600;
+  --weight-bold:700;
+
+  /* leading — the deck's own titles run tight (huge type, autofit-shrunk line box);
+     body copy stays generous, CJK body a touch more so. */
+  --leading-tight:0.95;
+  --leading-title:1.15;
+  --leading-body:1.6;
+  --leading-cjk:1.75;
+
+  /* tracking — the eyebrow/label role is the deck's one deliberately-tracked run
+     (spc="561" on a 16.5pt run = 0.34em); the CJK subtitle carries a much lighter
+     0.06em (spc="135" on 22.5pt). Everything else in the deck ships at 0 tracking —
+     no bold, no letter-spacing anywhere except those two roles. */
+  --tracking-title:-0.01em;
+  --tracking-cjk-title:0.06em;
+  --tracking-body:0;
+  --tracking-label:0.34em;   /* bold uppercase eyebrow — matches the deck exactly */
+  --tracking-mono:0.02em;
+
+  /* composed roles — headings are regular weight by design: the deck creates hierarchy with
+     SIZE and COLOUR, not boldness. Bold is reserved for the one eyebrow/label role. */
+  --type-poster-title:var(--weight-regular) var(--text-6xl)/var(--leading-tight) var(--font-display);
+  --type-hero:var(--weight-regular) var(--text-7xl)/var(--leading-tight) var(--font-display);
+  --type-h1:var(--weight-regular) var(--text-4xl)/var(--leading-title) var(--font-display);
+  --type-h2:var(--weight-regular) var(--text-2xl)/var(--leading-title) var(--font-display);
+  --type-h3:var(--weight-regular) var(--text-lg)/var(--leading-title) var(--font-ui);
+  --type-body:var(--weight-regular) var(--text-base)/var(--leading-body) var(--font-ui);
+  --type-body-cjk:var(--weight-regular) var(--text-base)/var(--leading-cjk) var(--font-ui);
+  --type-lede:var(--weight-regular) var(--text-lg)/var(--leading-cjk) var(--font-kai);
+  --type-small:var(--weight-regular) var(--text-sm)/var(--leading-body) var(--font-ui);
+  --type-label:var(--weight-bold) var(--text-base)/1.2 var(--font-ui);
+  --type-mono:var(--weight-medium) var(--text-sm)/1.4 var(--font-mono);
+  --numeric-tabular:tabular-nums; /* @kind other */
+}

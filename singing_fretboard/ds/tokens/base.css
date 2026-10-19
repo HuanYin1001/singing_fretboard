@@ -1,0 +1,16 @@
+/* Minimal element defaults so any consuming page inherits the brand voice without extra work. */
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg-page);color:var(--text-body);font:var(--type-body);text-wrap:pretty}
+h1,h2,h3,h4{color:var(--text-strong);margin:0;text-wrap:balance;font-weight:var(--weight-regular)}
+h1{font:var(--type-h1);letter-spacing:var(--tracking-title)}
+h2{font:var(--type-h2);letter-spacing:var(--tracking-title)}
+h3{font:var(--type-h3)}
+p{margin:0 0 var(--space-6)}
+a{color:var(--text-link);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:0.18em;transition:color var(--duration-fast) var(--ease-out)}
+a:hover{color:var(--accent-deep)}
+a:active{color:var(--primary-deep)}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:var(--radius-xs)}
+hr{border:0;border-top:var(--rule-hairline);margin:var(--space-9) 0}
+code,kbd{font:var(--type-mono);letter-spacing:var(--tracking-mono);font-variant-numeric:var(--numeric-tabular)}
+::selection{background:var(--accent);color:var(--ink)}
+:lang(zh),[lang^="zh"]{line-height:var(--leading-cjk)}
