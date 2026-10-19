@@ -291,7 +291,18 @@
 
     <div style="display: flex; flex-direction: column; gap: 8px;">
       <button type="button" title="操作說明 How to" onClick="{{ onToggleHelp }}" style="display: flex; align-items: center; gap: 7px; width: 100%; padding: 0; text-align: left; font-family: var(--font-cjk); font-size: 13px; font-weight: 700; letter-spacing: 0.08em; color: var(--mute); background: transparent; border: none; cursor: pointer;" style-hover="color: var(--ink); box-shadow: none;">操作說明<span style="flex: 1; height: 1px; background: var(--hairline);"></span><span style="flex: none; display: inline-flex; transform: rotate({{ helpRot }}deg); transition: transform 150ms cubic-bezier(.2,.6,.2,1);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></span></button>
-      <sc-if value="{{ helpOpen }}" hint-placeholder-val="{{ false }}">
+      <sc-if value="{{ helpTab }}" hint-placeholder-val="{{ false }}">
+        <div style="display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 6px 10px; font-family: var(--font-cjk); font-size: 12px; line-height: 1.7; color: var(--mute);">
+          <span style="font-weight: 700; color: var(--ink);">選取和弦</span><span>點選和弦以進入編輯</span>
+          <span style="font-weight: 700; color: var(--ink);">編輯圓點</span><span>點選格子以新增或移除圓點</span>
+          <span style="font-weight: 700; color: var(--ink);">封閉和弦</span><span>按住圓點並滑過其他弦</span>
+          <span style="font-weight: 700; color: var(--ink);">指法</span><span>長按圓點以設定指法</span>
+          <span style="font-weight: 700; color: var(--ink);">空弦</span><span>點選左側以切換 O／×</span>
+          <span style="font-weight: 700; color: var(--ink);">排序</span><span>按住已選取和弦的空白處並拖移</span>
+          <span style="font-weight: 700; color: var(--ink);">「多選」鍵</span><span>啟用後點選和弦以加入或取消，可整組拖移</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{ helpDesk }}" hint-placeholder-val="{{ false }}">
         <div style="display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 6px 10px; font-family: var(--font-cjk); font-size: 12px; line-height: 1.7; color: var(--mute);">
           <span style="font-weight: 700; color: var(--ink);">選取和弦</span><span>點擊和弦開始編輯</span>
           <span style="font-weight: 700; color: var(--ink);">放圓點</span><span>點擊格子輸入／刪除</span>
@@ -627,7 +638,7 @@
         儲存
         <span style="font-family: Barlow, sans-serif; font-size: 11px; font-weight: 500; opacity: 0.8;">⌘S</span>
       </button>
-      <button title="另存新檔 Save as" type="button" onClick="{{ onDlgFileSaveAs }}" style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 10px 12px; text-align: left; font-family: var(--font-cjk); font-size: 13px; font-weight: 600; color: var(--ink); background: var(--surface-bone); border: 1px solid var(--hairline); border-radius: var(--radius-sm); cursor: pointer;">
+      <button title="另存新檔 Save as" type="button" onClick="{{ onDlgFileSaveAs }}" style="display: {{ saveAsDisp }}; align-items: baseline; justify-content: space-between; gap: 10px; padding: 10px 12px; text-align: left; font-family: var(--font-cjk); font-size: 13px; font-weight: 600; color: var(--ink); background: var(--surface-bone); border: 1px solid var(--hairline); border-radius: var(--radius-sm); cursor: pointer;">
         另存新檔
         <span style="font-family: Barlow, sans-serif; font-size: 11px; font-weight: 500; color: var(--mute);">⇧⌘S</span>
       </button>
@@ -2290,6 +2301,7 @@ class Component extends DCLogic {
       noUndo: !st.past.length, noRedo: !st.future.length,
       onUndo: () => this.undo(), onRedo: () => this.redo(),
       isTablet: !!st.isTablet,
+      helpTab: !!(st.helpOpen && st.isTablet), helpDesk: !!(st.helpOpen && !st.isTablet),
       onMultiMode: () => this.setState(s => ({ multiMode: !s.multiMode, menu: null, cardMenu: null })),
       multiFg: st.multiMode ? '#B45309' : 'var(--ink)', multiBg: st.multiMode ? 'rgba(217,119,6,0.12)' : 'transparent', multiBc: st.multiMode ? 'var(--primary-deep)' : 'var(--hairline)',
       hasSel: !!sel,
@@ -2325,6 +2337,7 @@ class Component extends DCLogic {
       onCloseFileDlg: () => this.setState({ fileDlgOpen: false }),
       onDlgFileOpen: () => this.guard('open'),
       onDlgFileSave: () => { this.setState({ fileDlgOpen: false }); this.saveProject(false); },
+      saveAsDisp: st.isTablet ? 'none' : 'flex',
       onDlgFileSaveAs: () => { this.setState({ fileDlgOpen: false }); this.saveProject(true); },
       exportOpen: st.exportOpen,
       onToggleExport: () => this.setState(s => ({ exportOpen: !s.exportOpen, exportLogo: true })),
