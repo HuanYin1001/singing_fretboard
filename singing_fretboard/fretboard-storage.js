@@ -1,63 +1,7 @@
-// 弦吟指板｜存檔讀檔
-// 管三件事：瀏覽器本機儲存（localStorage）、專案檔（.json）的版本檢查、倉庫改名時的資料搬家。
-// 規則寫在專案的 CLAUDE.md：舊版格式不轉換，請使用者重做；較新版本請使用者更新 app。
-(function () {
-  var CFG = window.HYFB_CONFIG || {};   // v2.2 起在 <head> 先設定自己的倉庫名稱（見 project-link.js）
-  var LS_NS = CFG.ns || 'hy-fb-v1_8-';            // 現在的倉庫名稱
-  var LS_PREV_NS = CFG.prevNs || ['hy-fb-v1_1-'];     // 以前用過的倉庫名稱（正式版 v1.4 就存在這裡）。之後改名要把舊名加進來，不能刪。
-  var PROJ_V = 1;                        // 專案檔（.json）格式版本
-  var LS_SCHEMA_V = 1;                   // 本機「目前狀態」存檔格式版本
-  var KEYS = { fav: LS_NS + 'favs', save: LS_NS + 'saves', state: LS_NS + 'current', exp: LS_NS + 'export' };
-
-  // 導覽示範（網址帶 ?tour=1）：改用只在記憶體裡的暫存，不讀也不寫使用者的資料。
-  var TOUR = (function () { try { return new URLSearchParams(location.search).get('tour') === '1'; } catch (e) { return false; } })();
-  var MEM = { _d: {}, get length() { return Object.keys(this._d).length; }, key: function (i) { return Object.keys(this._d)[i] || null; }, getItem: function (k) { return Object.prototype.hasOwnProperty.call(this._d, k) ? this._d[k] : null; }, setItem: function (k, v) { this._d[k] = String(v); }, removeItem: function (k) { delete this._d[k]; } };
-  function store(s) { return s || (TOUR ? MEM : window.localStorage); }
-
-  // 第一次開新版時，把舊倉庫的資料「複製」到新倉庫；舊資料原地保留，新倉庫已有的不覆蓋。
-  function migrateNS(s) {
-    try {
-      s = store(s);
-      if (s.getItem(LS_NS + '_init')) return false;
-      var keys = [];
-      for (var i = 0; i < s.length; i++) keys.push(s.key(i));
-      LS_PREV_NS.forEach(function (old) {
-        keys.forEach(function (k) {
-          if (!k || k.indexOf(old) !== 0) return;
-          var nk = LS_NS + k.slice(old.length);
-          if (s.getItem(nk) === null) s.setItem(nk, s.getItem(k));
-        });
-      });
-      s.setItem(LS_NS + '_init', '1');
-      return true;
-    } catch (e) { return false; }
-  }
-
-  // 讀取：沒有資料或資料壞掉時回傳 fallback，不會讓畫面當掉。
-  function read(key, fallback, s) {
-    try { var v = store(s).getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; }
-  }
-
-  // 寫入：空間不足時安靜失敗，回傳 false。
-  function write(key, val, s) {
-    try { store(s).setItem(key, JSON.stringify(val)); return true; } catch (e) { return false; }
-  }
-
-  function userError(m) { var e = new Error(m); e.userMsg = m; return e; }
-
-  // 打開專案檔：先檢查，全部通過才回傳內容；任何一項不符就丟出給使用者看的訊息，不會套用一半。
-  function parseProject(text) {
-    var o;
-    try { o = JSON.parse(text); } catch (e) { throw userError('這份檔案讀不進來，請確認是專案檔（.json）。'); }
-    if (o && o.app === 'singing-chord') throw userError('這是和弦的專案檔，請切換到「和弦」再開啟。');
-    if (!o || o.app !== 'singing-fretboard' || !o.d) throw userError('這份檔案不是弦吟指板的專案檔。');
-    if (typeof o.v !== 'number' || o.v < PROJ_V) throw userError('這份專案檔是舊版格式，目前版本無法開啟。');
-    if (o.v > PROJ_V) throw userError('這份專案檔來自較新的版本，請更新 app 後再開啟。');
-    return o;
-  }
-
-  window.HYFB_STORE = {
-    LS_NS: LS_NS, LS_PREV_NS: LS_PREV_NS, PROJ_V: PROJ_V, LS_SCHEMA_V: LS_SCHEMA_V, KEYS: KEYS,
-    migrateNS: migrateNS, read: read, write: write, parseProject: parseProject
-  };
-})();
+/*!
+ * 弦吟指板筆記 Singing Fretboard Notes
+ * © 2026 弦吟 Singing in String · 劉桓吟 HuanYin. All rights reserved.
+ * 保留所有權利。未經書面授權，不得複製、修改、散布或用於製作類似工具。
+ * Unauthorized copying, modification, distribution, or use to build similar tools is prohibited.
+ */
+!function(){var t=window.HYFB_CONFIG||{},e=t.ns||"hy-fb-v1_8-",r=t.prevNs||["hy-fb-v1_1-"],n={fav:e+"favs",save:e+"saves",state:e+"current",exp:e+"export"},i=function(){try{return"1"===new URLSearchParams(location.search).get("tour")}catch(t){return!1}}(),o={_d:{},get length(){return Object.keys(this._d).length},key:function(t){return Object.keys(this._d)[t]||null},getItem:function(t){return Object.prototype.hasOwnProperty.call(this._d,t)?this._d[t]:null},setItem:function(t,e){this._d[t]=String(e)},removeItem:function(t){delete this._d[t]}};function c(t){return t||(i?o:window.localStorage)}function u(t){var e=new Error(t);return e.userMsg=t,e}window.HYFB_STORE={LS_NS:e,LS_PREV_NS:r,PROJ_V:1,LS_SCHEMA_V:1,KEYS:n,migrateNS:function(t){try{if((t=c(t)).getItem(e+"_init"))return!1;for(var n=[],i=0;i<t.length;i++)n.push(t.key(i));return r.forEach((function(r){n.forEach((function(n){if(n&&0===n.indexOf(r)){var i=e+n.slice(r.length);null===t.getItem(i)&&t.setItem(i,t.getItem(n))}}))})),t.setItem(e+"_init","1"),!0}catch(t){return!1}},read:function(t,e,r){try{var n=c(r).getItem(t);return n?JSON.parse(n):e}catch(t){return e}},write:function(t,e,r){try{return c(r).setItem(t,JSON.stringify(e)),!0}catch(t){return!1}},parseProject:function(t){var e;try{e=JSON.parse(t)}catch(t){throw u("這份檔案讀不進來，請確認是專案檔（.json）。")}if(e&&"singing-chord"===e.app)throw u("這是和弦的專案檔，請切換到「和弦」再開啟。");if(!e||"singing-fretboard"!==e.app||!e.d)throw u("這份檔案不是弦吟指板的專案檔。");if("number"!=typeof e.v||e.v<1)throw u("這份專案檔是舊版格式，目前版本無法開啟。");if(e.v>1)throw u("這份專案檔來自較新的版本，請更新 app 後再開啟。");return e}}}();

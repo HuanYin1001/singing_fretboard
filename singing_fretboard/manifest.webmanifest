@@ -10,7 +10,7 @@
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
   "orientation": "landscape",
-  "background_color": "#EDE6DA",
+  "background_color": "#FAF6EF",
   "theme_color": "#B45309",
   "categories": ["education", "music"],
   "icons": [

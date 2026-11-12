@@ -1,43 +1,7 @@
-// Safari 縮放校正：Safari 量「有 zoom 的元素」位置時會偏掉，這裡改成跟 Chrome 一樣的畫面座標。
-// 其他瀏覽器自動偵測為正常，不做任何事。上線版打包檔 <head> 裡是同一段。
-(function () {
-  if (window.__hyZoomFix) return; window.__hyZoomFix = 1;
-  const P = Element.prototype, nat = P.getBoundingClientRect;
-  let cal = null;
-  // 2026-10-02：測試結果只在「量得到、數字合理」時才記住；視窗大小／瀏覽器縮放改變、頁面切回前景、載入完成後都重測。
-  // 以前第一次量就永久記住：如果剛好量在畫面還沒排好的瞬間，之後所有有 zoom 的小視窗（調弦、框選選單）位置都會被算錯，連 Chrome 也會。
-  const reset = () => { cal = null; };
-  ['resize', 'load', 'pageshow', 'visibilitychange'].forEach(n => window.addEventListener(n, reset));
-  window.addEventListener('load', () => setTimeout(reset, 1500));
-  function calibrate() {
-    if (cal) return cal;
-    if (!document.body) return { ok: true };
-    const box = document.createElement('div');
-    box.style.cssText = 'position:fixed;left:300px;top:200px;width:100px;height:100px;zoom:0.5;visibility:hidden;pointer-events:none;';
-    const a = document.createElement('div'), b = document.createElement('div');
-    a.style.cssText = 'position:absolute;left:40px;top:40px;width:10px;height:10px;';
-    b.style.cssText = 'position:absolute;left:200px;top:200px;width:10px;height:10px;';
-    box.appendChild(a); box.appendChild(b); document.body.appendChild(box);
-    const ra = nat.call(a), rb = nat.call(b), rx = nat.call(box);
-    box.remove();
-    // 真正位置：a 在 (300+20, 200+20)，b 在 (300+100, 200+100)，寬 5。
-    const Ax = (rb.left - ra.left) / 80, Ay = (rb.top - ra.top) / 80;
-    // 量不到（畫面還沒排好、被藏起來）或數字不合理：這次先當作正常，不記住，下次再測。
-    if (!(rx.width > 1) || !(Ax > 0.3 && Ax < 3.5) || !(Ay > 0.3 && Ay < 3.5)) return { ok: true };
-    if (Math.abs(Ax - 1) < 0.05 && Math.abs(Ay - 1) < 0.05) return (cal = { ok: true });
-    const Bx = ra.left - Ax * 320, By = ra.top - Ay * 220;
-    const k = Math.log(Ax) / Math.log(2);
-    cal = { ok: false, k: k > 0.05 ? k : 1, ox: Math.abs(1 - Ax) > 1e-6 ? Bx / (1 - Ax) : 0, oy: Math.abs(1 - Ay) > 1e-6 ? By / (1 - Ay) : 0, self: Math.abs(rx.width - 50) > 2 };
-    return cal;
-  }
-  P.getBoundingClientRect = function () {
-    const r = nat.call(this), c = calibrate();
-    if (c.ok) return r;
-    let z = 1, el = c.self ? this : this.parentElement;
-    while (el && el.nodeType === 1) { const v = parseFloat(getComputedStyle(el).zoom); if (v && v !== 1) z *= v; el = el.parentElement; }
-    if (Math.abs(z - 1) < 0.001) return r;
-    z = Math.pow(z, c.k);
-    const x = (r.left - c.ox) * z + c.ox, y = (r.top - c.oy) * z + c.oy;
-    return new DOMRect(x, y, r.width * z, r.height * z);
-  };
-})();
+/*!
+ * 弦吟指板筆記 Singing Fretboard Notes
+ * © 2026 弦吟 Singing in String · 劉桓吟 HuanYin. All rights reserved.
+ * 保留所有權利。未經書面授權，不得複製、修改、散布或用於製作類似工具。
+ * Unauthorized copying, modification, distribution, or use to build similar tools is prohibited.
+ */
+!function(){if(window.__hyZoomFix)return;window.__hyZoomFix=1;const t=Element.prototype,e=t.getBoundingClientRect;let o=null;const n=()=>{o=null};["resize","load","pageshow","visibilitychange"].forEach((t=>window.addEventListener(t,n))),window.addEventListener("load",(()=>setTimeout(n,1500))),t.getBoundingClientRect=function(){const t=e.call(this),n=function(){if(o)return o;if(!document.body)return{ok:!0};const t=document.createElement("div");t.style.cssText="position:fixed;left:300px;top:200px;width:100px;height:100px;zoom:0.5;visibility:hidden;pointer-events:none;";const n=document.createElement("div"),i=document.createElement("div");n.style.cssText="position:absolute;left:40px;top:40px;width:10px;height:10px;",i.style.cssText="position:absolute;left:200px;top:200px;width:10px;height:10px;",t.appendChild(n),t.appendChild(i),document.body.appendChild(t);const l=e.call(n),s=e.call(i),d=e.call(t);t.remove();const a=(s.left-l.left)/80,p=(s.top-l.top)/80;if(!(d.width>1&&a>.3&&a<3.5&&p>.3&&p<3.5))return{ok:!0};if(Math.abs(a-1)<.05&&Math.abs(p-1)<.05)return o={ok:!0};const h=l.left-320*a,c=l.top-220*p,r=Math.log(a)/Math.log(2);return o={ok:!1,k:r>.05?r:1,ox:Math.abs(1-a)>1e-6?h/(1-a):0,oy:Math.abs(1-p)>1e-6?c/(1-p):0,self:Math.abs(d.width-50)>2},o}();if(n.ok)return t;let i=1,l=n.self?this:this.parentElement;for(;l&&1===l.nodeType;){const t=parseFloat(getComputedStyle(l).zoom);t&&1!==t&&(i*=t),l=l.parentElement}if(Math.abs(i-1)<.001)return t;i=Math.pow(i,n.k);const s=(t.left-n.ox)*i+n.ox,d=(t.top-n.oy)*i+n.oy;return new DOMRect(s,d,t.width*i,t.height*i)}}();
