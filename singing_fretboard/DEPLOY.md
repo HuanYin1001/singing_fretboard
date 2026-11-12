@@ -1,4 +1,4 @@
-# 弦吟指板筆記 Singing Fretboard Notes — 部署說明（v3.2.1 靜態網站）
+# 弦吟指板筆記 Singing Fretboard Notes — 部署說明（v3.2.4 靜態網站）
 
 這個資料夾就是完整的 App。把 **`app/` 裡的所有檔案**放到一個 GitHub repo，用 Vercel 部署，就會得到一個可安裝的網頁 App。
 
@@ -13,7 +13,7 @@
 | `tour.dc.html` | 使用導覽（兩頁共用）。 |
 | `support.js`、`vendor/` | 讓畫面跑起來的程式（React 放在 `vendor/`，離線也能用）。 |
 | `ds/` | 設計系統的顏色、字體、樣式。 |
-| `*.js`（`fretboard-music.js` 等 8 個） | 音樂計算、存檔、連動、導覽文字、共用外殼、Safari 縮放校正。 |
+| `*.js`（`fretboard-music.js` 等 9 個） | 音樂計算、存檔、連動、導覽文字、共用外殼、Safari 縮放校正。 |
 | `manifest.webmanifest`、`icons/` | App 名稱與圖示。 |
 | `sw.js` | 離線快取。**每一個檔案都要列在裡面的 CORE 清單**。只在正式網址和 `*.vercel.app` 啟用。 |
 | `assets/` | logo、導覽頭像、提示音、分享預覽圖。 |
@@ -60,7 +60,13 @@
 3. **重要**：如果同時改了 `sw.js` 以外的檔案而使用者拿到舊版，把 `sw.js` 裡的
    `const VERSION = 'sf-v1';` 改成 `'sf-v2'`（依序遞增）再 push，所有裝置就會重新下載。
 
-### 本次更新（v3.2.1，`sf-v71`，2026-11-12）
+### 本次更新（v3.2.4，`sf-v72`，2026-11-13）
+
+- 手寫鉛筆風格：按 ⌘⇧P（Windows：Ctrl+Shift+P）切換。指板、和弦圖、匯出圖片都改成鉛筆筆跡和色鉛筆色票；再按一次換回原樣。只換外觀，資料不變。
+- 新增 `pencil-skin.js`（手寫風格），已列進 `sw.js` 離線清單。
+- 要換的檔：`index.html`、`chord.html`、`sw.js`、`DEPLOY.md`、9 個 `.js`（新增 `pencil-skin.js`）。本次要刪的檔：無。
+
+### 之前的更新（v3.2.1，`sf-v71`，2026-11-12）
 
 （從上次下載的 `sf-v69` 算起，含 `sf-v70`）
 - 和弦頁：匯出圖片可以選「單獨匯出」，一個和弦一張圖（不放標題、Logo、註解），打包成 zip 下載。
