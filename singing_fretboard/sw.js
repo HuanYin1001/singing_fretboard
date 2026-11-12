@@ -1,11 +1,12 @@
 // Singing Fretboard — service worker（v3.2.1 靜態網站：每個檔案分開放，CORE 要列出全部）
 // 換版本號就會讓所有裝置重新下載新檔案
-const VERSION = 'sf-v62';
+const VERSION = 'sf-v71';
 const CORE = [
   './',
   './index.html',
   './chord.html',
   './tour.dc.html',
+  './terms.html',
   './support.js',
   './vendor/react.production.min.js',
   './vendor/react-dom.production.min.js',
@@ -62,7 +63,7 @@ self.addEventListener('fetch', (e) => {
 
   // 導覽請求：先網路、失敗回快取（離線時用上次的頁面）
   if (req.mode === 'navigate') {
-    const page = /chord\.html$/.test(url.pathname) ? './chord.html' : './index.html';
+    const page = /chord\.html$/.test(url.pathname) ? './chord.html' : /terms\.html$/.test(url.pathname) ? './terms.html' : './index.html';
     e.respondWith(
       fetch(req)
         .then((res) => {
