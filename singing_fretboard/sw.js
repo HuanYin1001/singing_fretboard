@@ -1,6 +1,6 @@
 // Singing Fretboard — service worker（v3.2.1 靜態網站：每個檔案分開放，CORE 要列出全部）
 // 換版本號就會讓所有裝置重新下載新檔案
-const VERSION = 'sf-v69';
+const VERSION = 'sf-v72';
 const CORE = [
   './',
   './index.html',
@@ -28,6 +28,7 @@ const CORE = [
   './chord-library.js',
   './tour-text.js',
   './hy-shell.js',
+  './pencil-skin.js',
   './assets/tour-avatar.jpg',
   './assets/huanyin_logo.jpg',
   './assets/sfx/sub-ding.mp3',
